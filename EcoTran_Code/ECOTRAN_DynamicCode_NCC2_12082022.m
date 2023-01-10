@@ -1194,7 +1194,7 @@ saveFile            = strcat(SaveFile_directory,'Output/',SaveFile_label,'_',dat
 
             disp(strcat("Region selected: ",Region ," = zones ", num2str(SR)))
             
-            SubRegion1 = NCC2_SubregionReadIn_12072022(ECOTRAN,SR(1));%% CHANGE TO INDIVIDUAL MODELS EVENTUALLY
+            SubRegion1 = NCC2_SubregionReadIn_12072022(ECOTRAN,SR(1));
             SubRegion2 = NCC2_SubregionReadIn_12072022(ECOTRAN,SR(2));
             SubRegion3 = SubRegion2;
             SubRegion4 = NCC2_SubregionReadIn_12072022(ECOTRAN,SR(3));

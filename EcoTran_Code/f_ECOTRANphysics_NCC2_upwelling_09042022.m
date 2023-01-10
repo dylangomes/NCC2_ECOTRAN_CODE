@@ -58,13 +58,13 @@ display(['Running: ' fname_PhysicalModel])
 % ERD_CUTI_directory          = '/Users/jamesruzicka/Documents/10_ECOTRAN_code/7_NCC_code/NCC_physics/ERD_CUTI_data/CUTI_daily.nc'; % file: upwelling from ERD CUTI product
 
 % Ebi laptop
-NutrientFile_directory      = '/Users/dgome/Documents/ECOTRAN_NCC/code_files/'; % directory: NH-Line nutrient climatology
+NutrientFile_directory      = '/Users/dgome/Documents/NCC2_ECOTRAN_CODE/EcoTran_Code/'; % directory: NH-Line nutrient climatology
 NWP03winddata_directory     = '/Users/jimsebi/Documents/10_ECOTRAN_code/7_NCC_code/NCC_physics/nwpo3h_data_raw/'; % directory: raw south jetty wind data
 ERD_BUI_directory           = '/Users/jimsebi/Documents/10_ECOTRAN_code/7_NCC_code/NCC_physics/ERD_data_raw/ERD_45N125W_1967-2015.csv'; % file: upwelling from ERD BUI product
-ERD_CUTI_directory          = '/Users/dgome/Documents/NCC2/Code2Publish/Validation/Tuning_Detritus_Parameters/CUTI/CUTI_daily.nc'; % file: upwelling from ERD CUTI product
+ERD_CUTI_directory          = '/Users/dgome/Documents/NCC2_ECOTRAN_CODE/EcoTran_Code/CUTI/CUTI_daily.nc'; % file: upwelling from ERD CUTI product
 % ERD_ZERO_directory          = '/Users/dgome/Documents/NCC2/Code2Publish/Validation/Tuning_Detritus_Parameters/CUTI/CUTI_MEAN_Div20.nc'; % file: upwelling from ERD CUTI product
 % ERD_ZERO_directory          = '/Users/dgome/Documents/NCC2/Code2Publish/Validation/Tuning_Detritus_Parameters/CUTI/CUTI_daily - Copy.nc'; % file: upwelling from ERD CUTI product
-ERD_CONST_directory          = '/Users/dgome/Documents/NCC2/Code2Publish/Validation/Tuning_Detritus_Parameters/CUTI/CUTI_daily0.01.nc'; % file: upwelling from ERD CUTI product
+ERD_CONST_directory          = '/Users/dgome/Documents/NCC2_ECOTRAN_CODE/EcoTran_Code/CUTI/CUTI_daily0.01.nc'; % file: upwelling from ERD CUTI product
 
 % -------------------------------------------------------------------------
 

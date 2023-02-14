@@ -38,7 +38,7 @@ disp('  using a repeated average CUTI time-series')
 % STEP 2: load ERD CUTI data-----------------------------------------------
 ncid        = netcdf.open(readFile_ERD_CUTI, 'NC_NOWRITE'); % Open readFile
 % ncid        = netcdf.open('CUTI/CUTI_daily - Copy.nc', 'NC_NOWRITE'); % Open readFile; For TESTING ONLY
-Avg = readtable('CUTI/CUTI_AVERAGE_daily.csv');
+Avg = readtable('/Users/dgome/Documents/NCC2_ECOTRAN_CODE/EcoTran_Code/CUTI/CUTI_AVERAGE_daily.csv');
 
 
 varid       = netcdf.inqVarID(ncid, 'year');

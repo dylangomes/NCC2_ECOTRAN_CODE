@@ -1,4 +1,4 @@
-function FluxImbalance = f_EvaluateFluxBalance_11262021(UnCompactFlux)
+function FluxImbalance = f_EvaluateFluxBalance_11262021(UnCompactFlux,ShowOutput)
 % examine for flux time-series for imbalances IN & OUT of invidual boxes and IN & OUT of the overall domain
 % by Jim Ruzicka
 %
@@ -26,8 +26,9 @@ function FluxImbalance = f_EvaluateFluxBalance_11262021(UnCompactFlux)
 % *************************************************************************
 % STEP 1: unpack variables-------------------------------------------------
 fname_EvaluateFluxBalance	= mfilename; % save name of this m-file to keep in saved model results
-display(['   Running: ' fname_EvaluateFluxBalance])
-
+if ShowOutput
+   display(['   Running: ' fname_EvaluateFluxBalance])
+end
 flux_imbalance              = UnCompactFlux.flux_imbalance;
 flux_domain_imbalance       = UnCompactFlux.flux_domain_imbalance;
 % *************************************************************************
@@ -56,7 +57,7 @@ domain_export_imbalance_time                    = unique(domain_export_imbalance
 
 % *************************************************************************
 % STEP 3: display imbalance warnings---------------------------------------
-
+if ShowOutput
 if (isempty(import_imbalance_time)  && isempty(export_imbalance_time) && isempty(domain_import_imbalance_time) && isempty(domain_export_imbalance_time))
     display('   -->Flux time series is OK. No imbalances calculated')
 end
@@ -82,6 +83,7 @@ end
 
 if ~isempty(domain_export_imbalance_time)
     display(['   -->WARNING: total export imbalance OUT OF DOMAIN at t = ' num2str(domain_export_imbalance_time')])
+end
 end
 % *************************************************************************
 

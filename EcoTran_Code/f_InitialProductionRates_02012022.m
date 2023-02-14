@@ -1,4 +1,4 @@
-function [production_initial, FunctionName] = f_InitialProductionRates_02012022(ODEinput, production_driver, t_current)
+function [production_initial, FunctionName] = f_InitialProductionRates_02012022(ODEinput, production_driver, t_current, ShowOutput)
 % calculate initial or mean production conditions
 % by Jim Ruzicka
 %
@@ -27,7 +27,9 @@ function [production_initial, FunctionName] = f_InitialProductionRates_02012022(
 % STEP 1: unpack givens----------------------------------------------------
 % step 1a: log function file name -----------------------------------------
 fname_InitialProductionRates	= mfilename; % save name of this m-file to keep in saved model results
+if ShowOutput
 display(['Running: ' fname_InitialProductionRates])
+end
 FunctionName                    = fname_InitialProductionRates; % name of this f_InitialProductionRates function
 
 % step 1b: unpack givens --------------------------------------------------
@@ -61,8 +63,9 @@ production_initial                      = zeros(num_grps, num_boxes);           
 % % % else
 % % %     disp(['   -->NOTICE in ' fname_InitialProductionRates ': NO3 driver. Nutrient uptake & recycling in EnergyBudget is ACTIVE']); 
 % % % end
-
+if ShowOutput
 disp(['   -->NOTICE in ' fname_InitialProductionRates ': Ammonium uptake in EnergyBudget is DEACTIVED (NH4 columns set to 0)']);
+end
 EnergyBudget(:, [looky_plgcNH4 looky_bnthNH4], :) = 0; % shut off recycling; turn off flow of NH4 to any other box (i.e., primary producers, nitrification to NO3); NOTE: there is still flow INTO NH4 but no flow FROM NH4
 % *************************************************************************
 

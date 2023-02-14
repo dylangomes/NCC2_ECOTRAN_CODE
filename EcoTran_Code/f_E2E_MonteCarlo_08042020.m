@@ -138,7 +138,7 @@ display(['Running: ' fname_E2E_MonteCarlo])
 % step 1b: MonteCarloConditions -------------------------------------------
 num_MC                          = MonteCarloConditions.num_MC;              % number of random Monte Carlo models to generate
 DistributionType                = MonteCarloConditions.DistributionType;  	% 'normal' or 'uniform'
-
+rng('shuffle');
 
 % step 1c: ECOTRAN budgets ------------------------------------------------
 EnergyBudget                    = ECOTRAN.EnergyBudget(:, :, 1);            % this must be a single 2D production matrix, choose top matrix just in case this is a stack of MonteCarlo models

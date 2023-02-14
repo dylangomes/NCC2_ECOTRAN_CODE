@@ -1,4 +1,4 @@
-function CompactFlux = f_CompactFluxTimeSeries_11182019(FLUX)
+function CompactFlux = f_CompactFluxTimeSeries_11182019(FLUX,ShowOutput)
 % compact flux time series when arranged as 3D matrix (time X source box X destiny box)
 % by Jim Ruzicka
 %
@@ -37,8 +37,9 @@ function CompactFlux = f_CompactFluxTimeSeries_11182019(FLUX)
 % *************************************************************************
 % STEP 1: function code name ----------------------------------------------
 fname_CompactFlux        = mfilename; % save name of this m-file to keep in saved model results
+if ShowOutput
 display(['   Running: ' fname_CompactFlux])
-% *************************************************************************
+end% *************************************************************************
 
 
 

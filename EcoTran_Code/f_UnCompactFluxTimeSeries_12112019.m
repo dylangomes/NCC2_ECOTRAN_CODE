@@ -1,4 +1,4 @@
-function UnCompactFlux = f_UnCompactFluxTimeSeries_12112019(CompactFlux)
+function UnCompactFlux = f_UnCompactFluxTimeSeries_12112019(CompactFlux,ShowOutput)
 % UnCompact a flux time series to provide IMPORT & EXPORT fluxes for each box and the domain as a whole
 % by Jim Ruzicka
 %
@@ -46,8 +46,9 @@ function UnCompactFlux = f_UnCompactFluxTimeSeries_12112019(CompactFlux)
 % *************************************************************************
 % STEP 1: unpack variables-------------------------------------------------
 fname_UnCompactFluxTimeSeries	= mfilename; % save name of this m-file to keep in saved model results
+if ShowOutput
 display(['   Running: ' fname_UnCompactFluxTimeSeries])
-
+end
 compact_flux                        = CompactFlux.compact_flux; % (2D matrix: num_t X num_fluxes); NOTE: fluxes include all linked boxes +1 for external links
 looky_flux                          = CompactFlux.looky_flux;   % (2D matrix: num_fluxes_advection X 3-->[(destiny box) (source box) (flux address in non-compacted flux 2D matrix: destiny X source)]); NOTE: fluxes include all linked boxes +1 for external links; NOTE: values constant independent of t
 % *************************************************************************

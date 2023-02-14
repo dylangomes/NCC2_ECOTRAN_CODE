@@ -1,4 +1,4 @@
-function ECOTRANdynamic_NCC2_09262022_batch(setWD,Model_name,START,END,Region,upwelling_driver,CUTI_LAT,file_code_counter,run_Treatments,switch_FoodWebScenario,switch_SubModel,switch_INITIALproduction,switch_MonteCarlo,num_MC,ShowOutput)
+function ECOTRANdynamic_NCC2_09262022_batch(setWD,Model_name,START,END,Region,upwelling_driver,CUTI_LAT,run_Treatments,switch_FoodWebScenario,switch_SubModel,switch_INITIALproduction,switch_MonteCarlo,num_MC,FileOffset,ShowOutput)
 % a function version of ECOTRANdynamic for batch runs; run a dynamic model over time
 %
 % calls:
@@ -125,7 +125,7 @@ dat                  	= f_readEwEcsv_10pp_07072021(readFile);	% use for models w
   
   % step 1e: define filename and directory for saving results ---------------
     SaveFile_directory      = setWD; 
-  SaveFile_label          = strcat(regexprep(Model_name,".csv",""),"_", num2str(file_code_counter,'%03d')); 
+  SaveFile_label          = strcat(regexprep(Model_name,".csv",""),"_", num2str(CHANGEGROUP,'%03d'),"_", num2str(SCALE)); 
   % *************************************************************************
     
     
@@ -1119,13 +1119,13 @@ ODEinput.ConsumptionBudget_BoxType      = ConsumptionBudget_BoxType;	% distingui
   
   % % QQQ turn off MonteCarlo_loop to run only the "type" model or for debugging 
 MonteCarlo_loop     = 1; % MonteCarlo_loop is off for debugging
-saveFile            = strcat(SaveFile_directory,'Output/',SaveFile_label,'_',date,'.mat');
+% saveFile            = strcat(SaveFile_directory,'Output/',SaveFile_label,'_',date,'.mat');
 
 for MonteCarlo_loop = 1:num_MC
 if ShowOutput
 display(['MonteCarlo run ' num2str(MonteCarlo_loop) ' of ' num2str(num_MC)])
 end
-saveFile                        = strcat(SaveFile_directory,'Output/',SaveFile_label,'_', num2str(MonteCarlo_loop),'_',date,'.mat'); 
+saveFile                        = strcat(SaveFile_directory,'Output/temp/',SaveFile_label,'_', num2str(MonteCarlo_loop+FileOffset,'%04d'),'_',date,'.mat'); 
 
 % pick the current MonteCarlo food web --------------------------------
   current_biomass                	= biomass(:, 1);	% (t WWT/km2); NOTE: these are INITIAL biomass conditions; (vertical vector: num_grps X 1); NOTE: nutrients are zeros

@@ -952,22 +952,22 @@ MichaelisMenten_eta      = zeros(num_ANYPrimaryProd, 1, num_MC); % eta   = non-g
   % QQQ *********************************************************************
   % QQQ apply batch tuning adjustments to the ConsumptionBudget (only at top of MC stack)
 % EnergyBudget terms will be adjusted to match these changes in the ODE solver
-ConsumptionBudget_MC(2, looky_terminalBNTHdetritus, 1) = current_benthicDetritusMetabolism;
-ConsumptionBudget_MC(4, looky_terminalBNTHdetritus, 1) = current_benthicDetritusPredation;
-ConsumptionBudget_MC(5, looky_terminalBNTHdetritus, 1) = current_benthicDetritusSequestration;
-
+ConsumptionBudget_MC(2, looky_terminalBNTHdetritus, :) = current_benthicDetritusMetabolism;
+ConsumptionBudget_MC(4, looky_terminalBNTHdetritus, :) = current_benthicDetritusPredation;
+ConsumptionBudget_MC(5, looky_terminalBNTHdetritus, :) = current_benthicDetritusSequestration;
+     
 % adjust pelagic Detritus ConsumptionBudget rate by modifying ConsumptionBudget immediately before STEP 10 as follows:
 % set pelagic detritus predation  = (1 - current_pelagicDetritusMetabolism) * (ConsumptionBudget_MC(4, looky_terminalPLGCdetritus, 1) / (ConsumptionBudget_MC(4, looky_terminalPLGCdetritus, 1) + ConsumptionBudget_MC(5, looky_terminalPLGCdetritus, 1))
 % set pelagic detritus senescence = (1 - current_pelagicDetritusMetabolism) * (ConsumptionBudget_MC(5, looky_terminalPLGCdetritus, 1) / (ConsumptionBudget_MC(4, looky_terminalPLGCdetritus, 1) + ConsumptionBudget_MC(5, looky_terminalPLGCdetritus, 1))
-ConsumptionBudget_MC(2, looky_terminalPLGCdetritus, 1)	= current_pelagicDetritusMetabolism;
+ConsumptionBudget_MC(2, looky_terminalPLGCdetritus, :)	= current_pelagicDetritusMetabolism;
 original_predation                                      = ConsumptionBudget_MC(4, looky_terminalPLGCdetritus, 1);
 original_senescence                                     = ConsumptionBudget_MC(5, looky_terminalPLGCdetritus, 1);
-ConsumptionBudget_MC(4, looky_terminalPLGCdetritus, 1)  = (1 - current_pelagicDetritusMetabolism) * (original_predation / (original_predation + original_senescence));
-ConsumptionBudget_MC(5, looky_terminalPLGCdetritus, 1)  = (1 - current_pelagicDetritusMetabolism) * (original_senescence / (original_predation + original_senescence));
+ConsumptionBudget_MC(4, looky_terminalPLGCdetritus, :)  = (1 - current_pelagicDetritusMetabolism) * (original_predation / (original_predation + original_senescence));
+ConsumptionBudget_MC(5, looky_terminalPLGCdetritus, :)  = (1 - current_pelagicDetritusMetabolism) * (original_senescence / (original_predation + original_senescence));
 
 % QQQ set nitrification of plgcNH4 to 20% following Yool et al 2007
-ConsumptionBudget_MC(2, looky_plgcNH4, 1)   = 0.2; % nitrification
-ConsumptionBudget_MC(4, looky_plgcNH4, 1)   = 0.8; % 1- nitrification
+ConsumptionBudget_MC(2, looky_plgcNH4, :)   = 0.2; % nitrification
+ConsumptionBudget_MC(4, looky_plgcNH4, :)   = 0.8; % 1- nitrification
 if ShowOutput
 disp('QQQ NOTICE: pelagic NH4 conversion to NO3 set to 20% & predation set to 80% in ConsumptionBudget')
 end

@@ -1,4 +1,4 @@
-function ECOTRANdynamic_NCC2_09262022_batch(setWD,Model_name,START,END,Region,upwelling_driver,CUTI_LAT,run_Treatments,switch_FoodWebScenario,switch_SubModel,switch_INITIALproduction,switch_MonteCarlo,num_MC,FileOffset,ShowOutput)
+function ECOTRANdynamic_NCC2_09262022_batch(setWD,Model_name,START,END,Region,upwelling_driver,CUTI_LAT,CUTI_YEARS,run_Treatments,switch_FoodWebScenario,switch_SubModel,switch_INITIALproduction,switch_MonteCarlo,num_MC,FileOffset,ShowOutput)
 % a function version of ECOTRANdynamic for batch runs; run a dynamic model over time
 %
 % calls:
@@ -523,7 +523,7 @@ spatial_BiomassScalers         	= [1 1 0 1 0];	% NCC scalers for estimating init
   % step 6b: prepare advection & mixing time-series for each model box ------
   % 2D upwelling driver
 
-ECOTRANphysics                  = f_ECOTRANphysics_NCC2_upwelling_09042022(PHYSICSinput, upwelling_driver,ShowOutput); % SSS specify physical flux time-series to use: 'Brink_BUI', 'NWPO3_BUI', 'ERD_BUI', 'ERD_CUTI', or 'Fake_Upwelling')
+ECOTRANphysics                  = f_ECOTRANphysics_NCC2_upwelling_09042022(PHYSICSinput, upwelling_driver,ShowOutput,CUTI_YEARS); % SSS specify physical flux time-series to use: 'Brink_BUI', 'NWPO3_BUI', 'ERD_BUI', 'ERD_CUTI', or 'Fake_Upwelling')
 
 
  % step 6c: migration of each group (shared box face areas) ----------------

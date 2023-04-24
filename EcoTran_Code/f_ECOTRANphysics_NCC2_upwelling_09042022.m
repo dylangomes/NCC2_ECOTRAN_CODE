@@ -1,4 +1,4 @@
-function [ECOTRANphysics] = f_ECOTRANphysics_NCC2_upwelling_09042022(PHYSICSinput, upwelling_driver,ShowOutput)
+function [ECOTRANphysics] = f_ECOTRANphysics_NCC2_upwelling_09042022(PHYSICSinput, upwelling_driver,ShowOutput,CUTI_YEARS)
 % returns Advection and Mixing exchanges between boxes
 % use for NCC upwelling setting
 %
@@ -65,8 +65,6 @@ function [ECOTRANphysics] = f_ECOTRANphysics_NCC2_upwelling_09042022(PHYSICSinpu
   ERD_BUI_directory           = '/Users/jimsebi/Documents/10_ECOTRAN_code/7_NCC_code/NCC_physics/ERD_data_raw/ERD_45N125W_1967-2015.csv'; % file: upwelling from ERD BUI product
   ERD_CUTI_directory          = '/Users/dgome/Documents/NCC2_ECOTRAN_CODE/EcoTran_Code/CUTI/CUTI_daily.nc'; % file: upwelling from ERD CUTI product
   % ERD_CUTI_AVG_directory      = '/Users/dgome/Documents/NCC2_ECOTRAN_CODE/EcoTran_Code/CUTI/CUTI_AVERAGE_daily.csv'; % file: upwelling from ERD CUTI product
-  % ERD_ZERO_directory          = '/Users/dgome/Documents/NCC2/Code2Publish/Validation/Tuning_Detritus_Parameters/CUTI/CUTI_MEAN_Div20.nc'; % file: upwelling from ERD CUTI product
-  % ERD_ZERO_directory          = '/Users/dgome/Documents/NCC2/Code2Publish/Validation/Tuning_Detritus_Parameters/CUTI/CUTI_daily - Copy.nc'; % file: upwelling from ERD CUTI product
   ERD_CONST_directory          = '/Users/dgome/Documents/NCC2_ECOTRAN_CODE/EcoTran_Code/CUTI/CUTI_daily0.01.nc'; % file: upwelling from ERD CUTI product
   
   % -------------------------------------------------------------------------
@@ -85,7 +83,7 @@ function [ECOTRANphysics] = f_ECOTRANphysics_NCC2_upwelling_09042022(PHYSICSinpu
     
     
     % step 1b: time domain and vectors ----------------------------------------
-    datestart    = PHYSICSinput.datestart;  % enter starting date
+  datestart    = PHYSICSinput.datestart;  % enter starting date
   dateend      = PHYSICSinput.dateend;    % enter ending date
   dt           = PHYSICSinput.dt;         % t-step (d)
   t_grid       = PHYSICSinput.t_grid;     % t_grid; (vertical vector)
@@ -398,7 +396,7 @@ ERD_CUTI_input.smoothing_window     = smoothing_window; % set moving average smo
 ERD_CUTI_input.target_latitudes  	= target_latitudes; % QQQ chosse only 1 latitude for now; FFF in future, choose 1 or more target latitude(s); [31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47]
 
 
-ERD_CUTI                            = f_prep_ERD_CUTI_10132022(ERD_CUTI_input);
+ERD_CUTI                            = f_prep_ERD_CUTI_SELECTYEAR_10132022(ERD_CUTI_input,CUTI_YEARS);
 
 AdvecFluxRate                       = ERD_CUTI;        % (m3/s per 1m of BoxWidth); (vertical vector)
 fname_UpwellingDriver               = 'ERD_CUTI';       % save name of this driver to keep in saved model results

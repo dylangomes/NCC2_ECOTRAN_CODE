@@ -11,8 +11,9 @@
 
 %% SETUP MODEL
 tStart              = tic
-setWD               = 'C:/Users/dgome/Documents/NCC2_ECOTRAN_CODE/';% Choose directory (project)
+setWD               = 'C:/Users/dgome/Documents/NCC2_ECOTRAN_CODE/';% Choose directory (project); you can create of copy of ECOTRANdynamic_NCC2_TEMPLATE_PARALLEL_05152023 in a new project directory (setWD) to change input parameters without altering ECOTRANdynamic_NCC2_TEMPLATE_PARALLEL_05152023 in the shared GitHub repo.
 cd(setWD)
+
 Model_name          = 'NCC2_09032022.csv'; % Choose model csv 
 
 ShowOutput          = 0;       % 0 = suppress some function notes output (saves computation time), 1 = show output; Can suppress more later, tedious

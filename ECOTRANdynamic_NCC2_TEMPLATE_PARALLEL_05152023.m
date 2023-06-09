@@ -11,7 +11,7 @@
 
 %% SETUP MODEL
 tStart              = tic
-setWD               = 'C:/Users/dgome/Documents/ECOTRAN_NCC2_package/';% Choose directory (project)
+setWD               = 'C:/Users/dgome/Documents/NCC2_ECOTRAN_CODE/';% Choose directory (project)
 cd(setWD)
 Model_name          = 'NCC2_09032022.csv'; % Choose model csv 
 

@@ -20,7 +20,6 @@ function [ECOTRANphysics] = f_ECOTRANphysics_NCC2_upwelling_05142023(PHYSICSinpu
 %       PHYSICSinput:
 %           NutrientFile_directory          directory: NH-Line nutrient climatology
 %           ERD_CUTI_directory              directory: upwelling from ERD CUTI product
-%           ERD_CONST_directory             directory: upwelling from ERD CUTI product
 %           smoothing_window                window for smoothing before and after time-point (e.g., 2 = a window of 5 days centered on time-point t)
 %           target_latitudes                choose only 1 latitude (31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47)
 %           datestart                       time-series start date in matlab double format (scalar)
@@ -61,7 +60,6 @@ end
 % directories
 NutrientFile_directory      = PHYSICSinput.NutrientFile_directory;  % directory: NH-Line nutrient climatology
 ERD_CUTI_directory          = PHYSICSinput.ERD_CUTI_directory;      % file: upwelling from ERD CUTI product
-ERD_CONST_directory         = PHYSICSinput.ERD_CONST_directory;     % file: upwelling from ERD CUTI product
 % -------------------------------------------------------------------------
     
     
@@ -185,7 +183,7 @@ W_to_microE                 = 4.6;          % convert (W m^-2) to (microE m^-2 s
 %       The structure "calcur" has 15 entries: one for each model box and variable.
 % step 3a: load NH-Line nutrient climatology ------------------------------
 readNutrientFile           = 'calcur_res.mat'; % monthly mean nutrients
-readNutrientFile           = [NutrientFile_directory readNutrientFile];
+readNutrientFile           = strcat(NutrientFile_directory, readNutrientFile)
 load(readNutrientFile)
 looky_NO3                   = find([calcur.model_box]==1 & [calcur.var] == 3);
 box_I_NO3                   = calcur(looky_NO3).monthly_mean;
@@ -364,31 +362,6 @@ switch upwelling_driver
         AdvecFluxRate                       = ERD_AVG_CUTI;     % (m3/s per 1m of BoxWidth); (vertical vector)
         fname_UpwellingDriver               = 'ERD_AVG_CUTI';	% save name of this driver to keep in saved model results
     % end case 'ERD_AVG_CUTI' -------------------------------------------------
-  
-    
-    case 'ERD_CONST' % -----------------------------------------------------      
-        % ERD CONSTANT
-        %	get daily ZERO from ERD
-        %	NOTE: ERDZERO file covers 1-Jan-1988 through 30-June-2022 and has 1-day resolution
-        %   NOTE: code will replicate time-series to fill out to dateend
-
-        if ShowOutput
-        disp('   --> CONSTANT upwelling index');
-        end
-
-        ERD_CUTI_input.readFile_ERD_CUTI    = ERD_CONST_directory;
-        ERD_CUTI_input.datestart            = datestart;
-        ERD_CUTI_input.dateend              = dateend;
-        ERD_CUTI_input.num_t                = num_t;
-        ERD_CUTI_input.dt                   = dt;
-        ERD_CUTI_input.smoothing_window     = smoothing_window; % set moving average smoothing as time points for averaging before and after current time point
-        ERD_CUTI_input.target_latitudes  	= target_latitudes; % QQQ chosse only 1 latitude for now; FFF in future, choose 1 or more target latitude(s); [31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47]
-
-        ERD_CONST                         	= f_prep_ERD_CUTI_10132022(ERD_CUTI_input);
-
-        AdvecFluxRate                       = ERD_CONST;        % (m3/s per 1m of BoxWidth); (vertical vector)
-        fname_UpwellingDriver               = 'ERD_CONST';       % save name of this driver to keep in saved model results
-    % end case 'ERD_CONST' -------------------------------------------------
   
   
     case 'Fake_Upwelling' % -----------------------------------------------

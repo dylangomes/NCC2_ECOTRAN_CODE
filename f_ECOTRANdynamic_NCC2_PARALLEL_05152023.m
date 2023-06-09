@@ -531,9 +531,8 @@ PHYSICSinput.target_latitudes	= CUTI_LAT;
 PHYSICSinput.smoothing_window	= 5; % window for smoothing before and after time-point (e.g., 2 = a window of 5 days centered on time-point t)
 
 % define data file directories
-PHYSICSinput.NutrientFile_directory    	= '/Users/dgome/Documents/NCC2_ECOTRAN_CODE/EcoTran_Code/'; % directory: NH-Line nutrient climatology
-PHYSICSinput.ERD_CUTI_directory        	= '/Users/dgome/Documents/NCC2_ECOTRAN_CODE/EcoTran_Code/CUTI/CUTI_daily.nc'; % file: upwelling from ERD CUTI product
-PHYSICSinput.ERD_CONST_directory      	= '/Users/dgome/Documents/NCC2_ECOTRAN_CODE/EcoTran_Code/CUTI/CUTI_daily0.01.nc'; % file: upwelling from ERD CUTI product
+PHYSICSinput.NutrientFile_directory    	= strcat(fileparts(mfilename('fullpath')), "\PhysicalModel_functions\") % directory: NH-Line nutrient climatology
+PHYSICSinput.ERD_CUTI_directory        	= strcat(fileparts(mfilename('fullpath')), "\CUTI\CUTI_daily.nc"); % file: upwelling from ERD CUTI product
 
 spatial_BiomassScalers         	= [1 1 0 1 0];	% NCC scalers for estimating initial (or mean) primary producer biomasses across model domain; NOTE: these values are assumed; NOTE: x2 in Box I used to compensate for 30m depth relative to 15 m depths in Boxes II & IV; FFF apply NPZD scalers here
 % -------------------------------------------------------------------------

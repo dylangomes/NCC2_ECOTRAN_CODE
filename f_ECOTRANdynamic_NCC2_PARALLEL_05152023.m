@@ -1,6 +1,6 @@
 function f_ECOTRANdynamic_NCC2_PARALLEL_05152023(setWD, Model_name, START,END, Region,upwelling_driver, CUTI_LAT, ...
                                                  CUTI_YEARS, run_Treatments, switch_FoodWebScenario, switch_SubModel, ...
-                                                 switch_INITIALproduction, switch_MonteCarlo, num_MC, FileOffset, ShowOutput)
+                                                 switch_INITIALproduction, switch_MonteCarlo, num_MC, FileOffset, current_MC_Offset, ShowOutput)
 % a function version of ECOTRANdynamic_NCC2_12082022 for batch runs
 % run a dynamic model over time
 % PARALLEL COMPUTING VERSION
@@ -1117,7 +1117,7 @@ for MonteCarlo_loop = 1:num_MC
     if ShowOutput
         display(['MonteCarlo run ' num2str(MonteCarlo_loop) ' of ' num2str(num_MC)])
     end
-    saveFile                        = strcat(SaveFile_directory, 'Output/temp/', SaveFile_label, '_', num2str(MonteCarlo_loop+FileOffset, '%04d'), '_', date, '.mat'); 
+    saveFile                        = strcat(SaveFile_directory, 'Output/temp/', SaveFile_label, '_', num2str(MonteCarlo_loop+FileOffset+current_MC_Offset, '%04d'), '_', date, '.mat'); 
     
     % pick the current MonteCarlo food web --------------------------------
     current_biomass                	= biomass(:, 1);	% (t WWT/km2); NOTE: these are INITIAL biomass conditions; (vertical vector: num_grps X 1); NOTE: nutrients are zeros

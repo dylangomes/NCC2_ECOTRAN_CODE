@@ -1,4 +1,12 @@
 function CompactFlux = f_CompactFluxTimeSeries_11182019(FLUX,ShowOutput)
+
+% dwj change 
+% new ROMS code doesn't include ShowOutput argument
+if nargin < 2
+    ShowOutput = 0;
+end
+% end dwj change
+
 % compact flux time series when arranged as 3D matrix (time X source box X destiny box)
 % by Jim Ruzicka
 %

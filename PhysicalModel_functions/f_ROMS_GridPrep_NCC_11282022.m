@@ -18,13 +18,13 @@ fname_ROMS_GridPrep     = mfilename; % save name of this m-file to keep in saved
 display(['Running: ' fname_ROMS_GridPrep])
 
 % step 1a: define ROMS NetCDF files to read -------------------------------
-readFile_DepthLevels = '/Users/jimsebi/Documents/28_ROMS/1_Jacox_CaliforniaCurrent_RCP8p5/depth_levels_trimmed.nc';
+readFile_DepthLevels = f_GetFilePath("depth_levels_trimmed");
 % ncdisp(readFile_DepthLevels) % Display contents of NetCDF data source in Command Window
 
-readFile_grid = '/Users/jimsebi/Documents/28_ROMS/1_Jacox_CaliforniaCurrent_RCP8p5/wc12_grd.nc';
+readFile_grid = f_GetFilePath("wc12_gr");
 % ncdisp(readFile_grid) % Display contents of NetCDF data source in Command Window
 
-readFile_ExampleYear = '/Users/jimsebi/Documents/28_ROMS/1_Jacox_CaliforniaCurrent_RCP8p5/Hindcast_ROMS_data_1980-2010/wc12_avg_2008_trimmed.nc'; % 2008 time-series
+readFile_ExampleYear = f_GetFilePath("wc12_avg_2008_trimmed");
 % ncdisp(readFile_ExampleYear) % Display contents of NetCDF data source in Command Window
 % -------------------------------------------------------------------------
 

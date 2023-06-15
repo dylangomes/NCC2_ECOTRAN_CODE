@@ -22,6 +22,12 @@ function FluxImbalance = f_EvaluateFluxBalance_11262021(UnCompactFlux,ShowOutput
 %
 % revision date: 11-26-2021
 
+% dwj change 
+% new ROMS code doesn't include ShowOutput argument
+if nargin < 2
+    ShowOutput = 0;
+end
+% end dwj change
 
 % *************************************************************************
 % STEP 1: unpack variables-------------------------------------------------

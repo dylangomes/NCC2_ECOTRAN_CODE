@@ -82,7 +82,7 @@ display(['Running: ' fname_PhysicalModel])
 %                             };
 
 % readFile_directory      = '/Users/jamesruzicka/Documents/10_ECOTRAN_code/7_NCC_code/NCC_physics/ROMS_Jacox/Forecast_ROMS_data_1980-2050/'; % directory to ROMS time-series
-readFile_directory      = '/Volumes/Fortress/ROMS_Jacox/Forecast_ROMS_data_/'; % directory to ROMS time-series
+readFile_directory      = f_GetFilePath("ROMSdir"); % directory to ROMS time-series
 
 filename_list           = {
         'wc12_avg_gfdl_1980_trimmed.nc'
@@ -161,7 +161,7 @@ filename_list           = {
 
 % NutrientFile_directory     = '/Users/carenbarcelo/Documents/GitHub/ECOTRAN_NCC/4_Dynamic_code_cb/'; % directory: NH-Line nutrient climatology
 % NutrientFile_directory      = '/Users/jamesruzicka/Documents/10_ECOTRAN_code/7_NCC_code/NCC_physics/'; % directory: NH-Line nutrient climatology
-NutrientFile_directory      = '/Users/jimsebi/Documents/10_ECOTRAN_code/7_NCC_code/NCC_physics/'; % directory: NH-Line nutrient climatology
+NutrientFile_directory      = f_GetFilePath("PhysicalModel_functions"); % directory: NH-Line nutrient climatology
 % -------------------------------------------------------------------------
 
 
@@ -281,7 +281,7 @@ for year_loop = 1:num_years
         error('ERROR: missing ROMS netcdf file')
     end
     
-    readFile_FluxYear	= [readFile_directory filename_list{looky_file}];
+    readFile_FluxYear	= fullfile(readFile_directory, filename_list{looky_file});
     disp(['Processing year: ' num2str(current_year) ' ROMS file: ' filename_list{looky_file}])
     
     ROMSflux            = f_ROMS_FluxPrep_NCC_11302022(ROMSgrid, readFile_FluxYear); % NOTE: this code will provide compacted fluxes for the current ROMS year, but compaction step will be repeated AFTER all ROMS years are stacked
@@ -476,7 +476,7 @@ MLD                         = (cos(((t_grid/365)*pi)*2) * (rangeMLD * 0.5) + (mi
 %       The structure "calcur" has 15 entries: one for each model box and variable.
 % step 7a: load "calcur" --------------------------------------------------
 readNutrientFile           = 'calcur_res.mat'; % monthly mean nutrients
-readNutrientFile           = [NutrientFile_directory readNutrientFile];
+readNutrientFile           = fullfile(NutrientFile_directory, readNutrientFile);
 load(readNutrientFile, 'calcur')
 looky_NO3                   = find([calcur.model_box]==1 & [calcur.var] == 3);
 box_I_NO3                   = calcur(looky_NO3).monthly_mean;

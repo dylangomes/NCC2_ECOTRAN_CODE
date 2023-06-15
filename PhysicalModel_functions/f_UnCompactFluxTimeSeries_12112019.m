@@ -42,6 +42,12 @@ function UnCompactFlux = f_UnCompactFluxTimeSeries_12112019(CompactFlux,ShowOutp
 %
 % revision date: 12-11-2019
 
+% dwj change 
+% new ROMS code doesn't include ShowOutput argument
+if nargin < 2
+    ShowOutput = 0;
+end
+% end dwj change
 
 % *************************************************************************
 % STEP 1: unpack variables-------------------------------------------------

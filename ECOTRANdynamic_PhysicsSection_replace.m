@@ -1,3 +1,20 @@
+% dwj changes
+% Set up to allow this script to run as a standalone script for testing
+cd("/Users/djackson/Documents/QEDA/NWFSC/ECOTRAN/programs/NCC2_ECOTRAN_CODE");
+addpath(f_GetFilePath("PhysicalModel_functions"), f_GetFilePath("ODEsolver_functions"));
+switch_PhysicalModel        = "3D_ROMS";
+switch_ODEsolver            = 'CppSolver'; 
+
+Model_name          = 'NCC2_09032022.csv'; % Choose model csv 
+BiologicalModel_name	= Model_name; % Dylan's post-heatwave model
+readFile            	= fullfile(f_GetFilePath("projectPath"), BiologicalModel_name);
+dat                  	= f_readEwEcsv_10pp_07072021(readFile);	% use for models with up to 10 primary producers
+[EwEResult, PEDIGREE] 	= f_AggregateBiologicalModel_02052021(dat);
+MonteCarloStore         = [];
+[ECOTRAN]            	= ECOTRANheart_09032021(EwEResult, MonteCarloStore);
+num_grps                            = ECOTRAN.num_grps; 
+RetentionScaler                 	= ECOTRAN.RetentionScaler; 
+% end dwj changes
 %% *************************************************************************
 % STEP 6: prepare physical parameters--------------------------------------
 
@@ -74,7 +91,7 @@ switch switch_PhysicalModel
         disp('--->>> 3D ROMS physics')
 
         datestart                       = datenum('01-Jan-2005'); % SSS --> enter starting date
-        dateend                         = datenum('31-Dec-2006'); % SSS --> enter ending date (default for dynamic runs tests ('31-Dec-2020'))
+        dateend                         = datenum('31-Dec-2005'); % SSS --> enter ending date (default for dynamic runs tests ('31-Dec-2020'))
         dt                              = 24/24; % t-step; (days); (dt = 24/24 = 1 d; dt = 3/24 = 3 hours)
                                           % NOTE: take care to select good dt values for diel vertical migration 
                                           %       (other values do not scale well between 1 & -1 in sin diel cycle (probably due to rounding error of pi() function)

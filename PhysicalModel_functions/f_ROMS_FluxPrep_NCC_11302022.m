@@ -22,8 +22,6 @@ function ROMSflux = f_ROMS_FluxPrep_NCC_11302022(ROMSgrid, readFile_FluxYear)
 % FFF still need to aggregate the tracer variables (3D matrix: time X tracer X domain)
 % FFF come back and do time-dependent zeta later
 
-
-
 % *************************************************************************
 % STEP 1: set operating conditions-----------------------------------------
 fname_ROMS_FluxPrep     = mfilename; % save name of this m-file to keep in saved model results
@@ -835,7 +833,7 @@ for v_loop = 1:num_connections
     current_v               = agg_flux_NS(current_W_v:current_E_v, use_DOIlatitude, :, :); % N<-->S volume flux; (m3/s); (4D matrix: num_ROMS cells E<-->W X 1 X num_agg_z X num_t_ROMS)
     looky_filler            = find(abs(current_v) > 10^20); % filter out "filler" values; QQQ filter out junk values earlier in code
     current_v(looky_filler)	= NaN; % v; (m2/s); (4D matrix: num_ROMS cells E<-->W X 1 X num_agg_z X num_t_ROMS)
-    current_v               = nansum(current_v, 1); % (m3/s); (4D matrix: 1 X 1 X num_agg_z X num_t_ROMS)
+    current_v               = sum(current_v, 1, "omitnan"); % (m3/s); (4D matrix: 1 X 1 X num_agg_z X num_t_ROMS)
     
     source_tag              = current_v * flux_sign; % POSITIVE when DOI is DESTINY; NEGATIVE when DOI is SOURCE; (4D matrix: 1 X 1 X num_agg_z X num_t_ROMS)
     source_tag(source_tag > 0) = +1; % source_tag is either +1 or -1; (4D matrix: 1 X 1 X num_agg_z X num_t_ROMS)
@@ -902,7 +900,7 @@ for u_loop = 1:num_connections
     current_u               = agg_flux_EW(use_DOIlongitude, current_S_u:current_N_u, :, :); % W<-->E volume flux; (m3/s); (4D matrix: 1 X num_ROMS cells S<-->N X num_agg_z X num_t_ROMS)
     looky_filler            = find(abs(current_u) > 10^20); % filter out "filler" values; QQQ filter out junk values earlier in code
     current_u(looky_filler)	= NaN; % u; (m2/s); (4D matrix: 1 X num_ROMS cells S<-->N X num_agg_z X num_t_ROMS)
-    current_u               = nansum(current_u, 2); % (m3/s); (4D matrix: 1 X 1 X num_agg_z X num_t_ROMS)
+    current_u               = sum(current_u, 2, "omitnan"); % (m3/s); (4D matrix: 1 X 1 X num_agg_z X num_t_ROMS)
     
     source_tag              = current_u * flux_sign; % POSITIVE when DOI is DESTINY; NEGATIVE when DOI is SOURCE; (4D matrix: 1 X 1 X num_agg_z X num_t_ROMS)
     source_tag(source_tag > 0) = +1; % source_tag is either +1 or -1

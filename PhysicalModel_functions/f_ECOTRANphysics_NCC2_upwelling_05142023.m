@@ -183,7 +183,7 @@ W_to_microE                 = 4.6;          % convert (W m^-2) to (microE m^-2 s
 %       The structure "calcur" has 15 entries: one for each model box and variable.
 % step 3a: load NH-Line nutrient climatology ------------------------------
 readNutrientFile           = 'calcur_res.mat'; % monthly mean nutrients
-readNutrientFile           = fullfile(NutrientFile_directory, readNutrientFile)
+readNutrientFile           = fullfile(NutrientFile_directory, readNutrientFile);
 load(readNutrientFile)
 looky_NO3                   = find([calcur.model_box]==1 & [calcur.var] == 3);
 box_I_NO3                   = calcur(looky_NO3).monthly_mean;

@@ -13,7 +13,9 @@ dat                  	= f_readEwEcsv_10pp_07072021(readFile);	% use for models w
 MonteCarloStore         = [];
 [ECOTRAN]            	= ECOTRANheart_09032021(EwEResult, MonteCarloStore);
 num_grps                            = ECOTRAN.num_grps; 
-RetentionScaler                 	= ECOTRAN.RetentionScaler; 
+RetentionScaler                 	= ECOTRAN.RetentionScaler;
+
+rc_plgc_detritus            = 91;
 % end dwj changes
 %% *************************************************************************
 % STEP 6: prepare physical parameters--------------------------------------

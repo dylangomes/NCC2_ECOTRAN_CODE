@@ -108,8 +108,8 @@ switch_ODEsolver            = 'CppSolver';                          % OPTION 1: 
 switch_FunctionalResponse	= 'NonLinear_default';	% NonLinear_default functional response
 % switch_FunctionalResponse	= 'NonLinear_alt';      % NonLinear_default functional response
 
-switch_PhysicalModel        = '2D_physics';
-% switch_PhysicalModel        = '3D_ROMS';
+% switch_PhysicalModel        = '2D_upwelling';
+switch_PhysicalModel        = '3D_ROMS';
 
 % % % set these switches in ECOTRAN_DynamicCode_NCC2_PARALLEL_05152023 script:
 % % switch_MonteCarlo           = 'MonteCarlo_build';               % generate (and optionally save) a stack of MonteCarlo food webs
@@ -258,10 +258,6 @@ switch switch_MonteCarlo
 end % (switch_MonteCarlo)
 % *************************************************************************
     
-    
-    
-    
-    
 % *************************************************************************
 % STEP 4: prep and pack ECOTRAN model parameters---------------------------
 % step 4a: read in ECOTRAN structure variables ----------------------------
@@ -279,12 +275,10 @@ fate_senescence                  	= ECOTRAN.fate_senescence;
 ProductionLossScaler             	= ECOTRAN.ProductionLossScaler;	% (vertical vector: num_grps X 1)
 RetentionScaler                 	= ECOTRAN.RetentionScaler;      % sensitivity to advection & mixing (0 = more advection <--> less advection =1); (vertical vector: num_grps X 1)
 FunctionalResponseParams         	= ECOTRAN.FunctionalResponseParams;
-"here"
 num_grps                            = ECOTRAN.num_grps;             % number of model groups
 % num_MC                              = ECOTRAN.num_MC;               % number of Monte Carlo models
 % TransferEfficiency                  = ECOTRAN.TransferEfficiency;	  % gets redefined manually below
 % -------------------------------------------------------------------------
-
 
 %% step 4b: find detritus, nutrients, ba & em -----------------------------
 %           row addresses in EnergyBudget_MC
@@ -332,7 +326,6 @@ num_eggs                         	= length(looky_eggs);
 num_ANYdetritus                     = length(looky_ANYdetritus);
 % -------------------------------------------------------------------------
 
-
 % step 4c: pack variables for ODE solver ----------------------------------
 ODEinput.looky_nutrients            = looky_nutrients;
 ODEinput.looky_NO3                  = looky_NO3;
@@ -367,10 +360,6 @@ ODEinput.num_eggs                 	= num_eggs;
 ODEinput.num_ANYdetritus            = num_ANYdetritus;
 % *************************************************************************
 
-
-
-
-
 %% *************************************************************************
 % STEP 5: define TransferEfficiency terms----------------------------------
 %         SET MANUALLY: TransferEfficiency = 1 for all groups because we are
@@ -380,10 +369,6 @@ ODEinput.num_ANYdetritus            = num_ANYdetritus;
 %               TE is the only means of removing terminal benthic detritus from system
 TransferEfficiency                  = ones(num_MC, num_grps); % re-initialize as rows of horizontal vector of ones                            
 % *************************************************************************
-
-
-
-
 
 % *************************************************************************
 % SCENARIO STEP: Force changes to the food web structure via Static Scenario method
@@ -479,10 +464,6 @@ switch switch_FoodWebScenario
 end % (switch_FoodWebScenario)
 % *************************************************************************
 
-
-
-
-
 %% *************************************************************************
 % STEP 6: prepare physical parameters--------------------------------------
 
@@ -496,8 +477,8 @@ switch switch_PhysicalModel
         
         disp('--->>> 2D upwelling physics')
 
-        datestart                       = datenum('01-Jan-1998'); % SSS --> enter starting date
-        dateend                         = datenum('31-Dec-2022'); % SSS --> enter ending date
+        datestart                       = datenum(START); % SSS --> enter starting date
+        dateend                         = datenum(END); % SSS --> enter ending date
         
         dt                              = 24/24; % t-step; (days); (dt = 1 = 1 d; dt = 4/24 = 4 hours)
                                           % NOTE: take care to select good dt values for diel vertical migration 
@@ -511,19 +492,44 @@ switch switch_PhysicalModel
         PHYSICSinput.dateend            = dateend;
         PHYSICSinput.dt                 = dt;
         PHYSICSinput.t_grid             = t_grid;
+
+        % auto select latitude
+        if strcmp(CUTI_LAT,"Auto")
+            if strcmp(Region, 'WA')
+                CUTI_LAT = 47;
+            elseif strcmp(Region, 'CR')
+                CUTI_LAT = 46;
+            elseif strcmp(Region, 'NOR')
+                CUTI_LAT = 45;
+            elseif strcmp(Region, 'SOR')
+                CUTI_LAT = 43;
+            elseif strcmp(Region, 'NCA')
+                CUTI_LAT = 41;
+            else
+                if ShowOutput
+                    disp('ERROR: Choose a valid subregion: (WA,CR,NOR,SOR,NCA)')
+                end
+            end
+        end
+        
+        disp(['--->>> CUTI latitude: ' num2str(CUTI_LAT)])
+        PHYSICSinput.target_latitudes	= CUTI_LAT;
+
         PHYSICSinput.smoothing_window	= 5; % window for smoothing before and after time-point (e.g., 2 = a window of 5 days centered on time-point t)
         
+        % define data file directories
+        PHYSICSinput.NutrientFile_directory    	= f_GetFilePath("NutrientFile_directory"); % directory: NH-Line nutrient climatology
+        PHYSICSinput.ERD_CUTI_directory        	= f_GetFilePath("ERD_CUTI_directory"); % file: upwelling from ERD CUTI product
+
         spatial_BiomassScalers         	= [1 1 0 1 0];	% NCC scalers for estimating initial (or mean) primary producer biomasses across model domain
-
         % -------------------------------------------------------------------------
-
 
         % step 6b: prepare advection & mixing time-series for each model box ------
         % 2D upwelling driver
-        ECOTRANphysics                  = f_ECOTRANphysics_upwelling_09052022(PHYSICSinput, 'ERD_CUTI'); % SSS specify physical flux time-series to use: 'Brink_BUI', 'NWPO3_BUI', 'ERD_BUI', 'ERD_CUTI', or 'Fake_Upwelling'
+        ECOTRANphysics                  = f_ECOTRANphysics_NCC2_upwelling_05142023(PHYSICSinput, upwelling_driver,ShowOutput,CUTI_YEARS); % SSS specify physical flux time-series to use: 'Brink_BUI', 'NWPO3_BUI', 'ERD_BUI', 'ERD_CUTI', or 'Fake_Upwelling')
 
         % apply any desired change to the temperature time-series (DO NOT change temperature_reference)
-        ECOTRANphysics.temperature_timeseries	= ECOTRANphysics.temperature_timeseries + temperature_scenario; % (2D matrix: num_t X num_boxes)
+        %ECOTRANphysics.temperature_timeseries	= ECOTRANphysics.temperature_timeseries + temperature_scenario; % (2D matrix: num_t X num_boxes)
         % -------------------------------------------------------------------------
 
 
@@ -541,25 +547,27 @@ switch switch_PhysicalModel
         SINKING                         = ECOTRANphysics.SINKING;           % box floor area between sinking source box and destination box; (m2); (3D matrix: num_t X SOURCE (num_boxes+1 boundary) X DESTINY (num_boxes+1 boundary))
         MIGRATION                       = ECOTRANmigration.MIGRATION;       % migration as boundary area between boxes; (m2); (3D matrix: num_t X SOURCE (num_boxes+1 boundary) X DESTINY (num_boxes+1 boundary))
         
-        CompactFlux_ADVECTION           = f_CompactFluxTimeSeries_11182019(ADVECTION);        % compact ADVECTION 3D matrix
-        CompactFlux_HORIZONTALMIXING	= f_CompactFluxTimeSeries_11182019(HORIZONTALMIXING); % compact HORIZONTALMIXING 3D matrix
-        CompactFlux_VERTICALMIXING      = f_CompactFluxTimeSeries_11182019(VERTICALMIXING);   % compact VERTICALMIXING 3D matrix
-        CompactFlux_SINKING             = f_CompactFluxTimeSeries_11182019(SINKING);          % compact SINKING 3D matrix
-        CompactFlux_MIGRATION           = f_CompactFluxTimeSeries_11182019(MIGRATION);        % compact MIGRATION 3D matrix
+        CompactFlux_ADVECTION           = f_CompactFluxTimeSeries_11182019(ADVECTION, ShowOutput);        % compact ADVECTION 3D matrix
+        CompactFlux_HORIZONTALMIXING	= f_CompactFluxTimeSeries_11182019(HORIZONTALMIXING, ShowOutput); % compact HORIZONTALMIXING 3D matrix
+        CompactFlux_VERTICALMIXING      = f_CompactFluxTimeSeries_11182019(VERTICALMIXING, ShowOutput);   % compact VERTICALMIXING 3D matrix
+        CompactFlux_SINKING             = f_CompactFluxTimeSeries_11182019(SINKING, ShowOutput);          % compact SINKING 3D matrix
+        CompactFlux_MIGRATION           = f_CompactFluxTimeSeries_11182019(MIGRATION, ShowOutput);        % compact MIGRATION 3D matrix
 
         
         % Special case for 2D cross-shelf upwelling physics
-        ODEinput.SinkLink_surface = ECOTRANphysics.SinkLink_surface; % only used for 5-box, 2D cross-shelf settings; (3D matrix: destination boxes X 1 X source boxes)
+        % ODEinput.SinkLink_surface = ECOTRANphysics.SinkLink_surface; % only used for 5-box, 2D cross-shelf settings; (3D matrix: destination boxes X 1 X source boxes)
+
+        ODEinput.SinkLink_surface       = ECOTRANphysics.SinkLink_surface; % QQQ only used for 5-box, 2D cross-shelf settings; (3D matrix: destination boxes X 1 X source boxes)
+        ODEinput.SinkLink_benthos       = ECOTRANphysics.SinkLink_benthos; % (3D matrix: destination boxes X 1 X source boxes)
         
 	% end (case '2D_upwelling') --------------
 
-    
     case '3D_ROMS'
         
         disp('--->>> 3D ROMS physics')
 
-        datestart                       = datenum('01-Jan-2005'); % SSS --> enter starting date
-        dateend                         = datenum('31-Dec-2005'); % SSS --> enter ending date (default for dynamic runs tests ('31-Dec-2020'))
+        datestart                       = datenum(START); % SSS --> enter starting date
+        dateend                         = datenum(END); % SSS --> enter ending date (default for dynamic runs tests ('31-Dec-2020'))
         dt                              = 24/24; % t-step; (days); (dt = 24/24 = 1 d; dt = 3/24 = 3 hours)
                                           % NOTE: take care to select good dt values for diel vertical migration 
                                           %       (other values do not scale well between 1 & -1 in sin diel cycle (probably due to rounding error of pi() function)
@@ -594,8 +602,6 @@ switch switch_PhysicalModel
 
         % ODEinput.biomass_migrator       = ECOTRANmigration.biomass_migrator;  % SSS special definition of boundary biomasses for migrators; (mmoles N/m3); (3D matrix: num_t X num_grps X num_boxes); NOTE: de-comment migrator biomass lines within ODE code
         % -------------------------------------------------------------------------
-
-        
         CompactFlux_ADVECTION           = ECOTRANphysics.CompactFlux_ADVECTION; % (structure)
         CompactFlux_HORIZONTALMIXING	= ECOTRANphysics.CompactFlux_HORIZONTALMIXING; % (structure)
         CompactFlux_VERTICALMIXING      = ECOTRANphysics.CompactFlux_VERTICALMIXING; % (structure)
@@ -791,8 +797,8 @@ end % (switch switch_ODEsolver)
 %          NOTE: apply this factor whether or not using Michaelis-Menten for primary producers
 SinkingSpeed                                = zeros(num_t, num_grps, num_fluxes_sinking);	% initialze sinking speed time-series; (m/d); (3D matrix: num_t X num_grps X num_fluxes_sinking)
 
-SinkingSpeed(:, rc_plgc_detritus, :)      	= repmat((10.5), [num_t, 1, num_fluxes_sinking]);   % SSS; sinking speed; (m/d); (3D matrix: num_t X num_grps X num_fluxes_sinking)
-% SinkingSpeed(:, rc_bnth_detritus, :)       	= repmat((25),   [num_t, 1, num_fluxes_sinking]);   % SSS; sinking speed; (m/d); (3D matrix: num_t X num_grps X num_fluxes_sinking)
+SinkingSpeed(:, looky_terminalPLGCdetritus, :)      	= repmat((10.5), [num_t, 1, num_fluxes_sinking]);   % SSS; sinking speed; (m/d); (3D matrix: num_t X num_grps X num_fluxes_sinking)
+% SinkingSpeed(:, looky_terminalBNTHdetritus, :)       	= repmat((25),   [num_t, 1, num_fluxes_sinking]);   % SSS; sinking speed; (m/d); (3D matrix: num_t X num_grps X num_fluxes_sinking)
 % SinkingSpeed(:, rc_fishery_offal, :)       	= repmat((40),   [num_t, 1, num_fluxes_sinking]);   % SSS; sinking speed; (m/d); (3D matrix: num_t X num_grps X num_fluxes_sinking)
 disp('NOTICE: for vertically-integrated food-web technique IN 2D & 3D ROMS SHELF SETTINGS, sinking is applied ONLY FOR PELAGIC DETRITUS (change manually in code)')
 

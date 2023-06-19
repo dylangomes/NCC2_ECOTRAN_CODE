@@ -122,9 +122,15 @@ switch_PhysicalModel        = '3D_ROMS';
 % % switch_SubModel             = 'identical_SubModel';             % OPTION 1: use the same food web across the shelf
 % % switch_SubModel             = 'independent_SubModel';           % OPTION 2: use independently defined webs for each shelf zone
 % % 
+
+% switch_ExternalDriver       = 'ExternalDriver_BoundaryConcentration';	% OPTION 1: use for 2D or 3D model driven by advection & mixing of boundary concentrations of driver(s) into model domain 
+switch_ExternalDriver       = 'ExternalDriver_ForcedInput';             % OPTION 2: use for 3D ROMS setting when driving with BioGeoChemical model output
+
 % % switch_INITIALproduction	= 'INITIALproduction_pb';           % METHOD 1: use for driving initial model conditions with primary production defined by p = [(p/b) * b]
 % % switch_INITIALproduction	= 'INITIALproduction_SubModel';     % METHOD 2: use for driving initial model conditions with values loaded along with regional sub-model definitions 
 % % switch_INITIALproduction	= 'INITIALproduction_nutrients';	% METHOD 3: use for driving initial model conditions with mean annual nutrient input rates
+switch_INITIALproduction	= 'INITIALproduction_BioGeoChemicalModel';	% METHOD 5: use for driving initial model conditions with mean annual ROMS-BioGeoChemichal Primary Production rates
+
 % -------------------------------------------------------------------------
 
 
@@ -153,17 +159,11 @@ SaveFile_label          = strcat(regexprep(Model_name, ".csv", ""), "_", num2str
 % *************************************************************************
 
 
-
-
-
 % *************************************************************************
 % STEP 2: ECOTRAN conversion-----------------------------------------------
 MonteCarloStore         = [];
 [ECOTRAN]            	= ECOTRANheart_09032021(EwEResult, MonteCarloStore);
 % *************************************************************************
-    
-    
-    
     
     
 % *************************************************************************
@@ -886,28 +886,11 @@ q_TemperatureScaler     = ones(num_t, num_grps, num_boxes); % modify consumption
   
   
 %% *************************************************************************
-% STEP 8: prepare external_driver time-series------------------------------
-%         NOTE: This is the external input that enters the model domain via 
-%               advection & mixing.
+% STEP 8: prepare boundary concentration, external_driver, and externalForcing time-series----------
 %         NOTE: DEFAULT: The reflective boundary assumption is that biomass of non-external_driver 
 %               groups are the same on either side of model domain outer boundaries.
 
-% step 8a: define external driver group(s) & driver time-series -----------
-%          NOTE: driver time-series (external_driver) is a biomass density and not a rate (mmole N/m3); (3D matrix: num_t X num_drivers X num_boxes+1)
-%          FFF: defining for all boxes now, but will try to trim down to just the boxes with fluxes
-looky_driver                            = looky_NO3; % identify driver group(s)
-num_drivers                             = length(looky_driver);
-NO3timeseries_conc                      = reshape(NO3timeseries_conc, [num_t, 1, num_boxes]);	% (mmole N/m3); (3D matrix: num_t X 1 X num_boxes)
-% NH4timeseries_conc                      = reshape(NH4timeseries_conc, [num_t, 1, num_boxes]);	% (mmole N/m3); (3D matrix: num_t X 1 X num_boxes)
-
-external_driver(:, looky_NO3, :)     	= NO3timeseries_conc; % SSS; external boundary driver (e.g. NO3) biomass for each box; (mmole N/m3); (3D matrix: num_t X num_drivers X num_boxes)
-% external_driver(:, looky_plgcNH4, :)	= NH4timeseries_conc; % SSS; external boundary driver (e.g. NH4) biomass for each box; (mmole N/m3); (3D matrix: num_t X num_drivers X num_boxes)
-
-external_driver(:, :, (end+1))          = 0; % add layer for external boundary driver (e.g. NO3) biomass for each box; (mmole N/m3); (3D matrix: num_t X num_drivers X num_boxes+1)
-% -------------------------------------------------------------------------
-
-
-%% step 8b: define boundary biomass time-series ----------------------------
+% step 8a: define boundary biomass time-series ----------------------------
 %             NOTE: boundary conditions are defined for each domain box
 %                   whether or not that box is on the edge of the domain 
 %                   (if not, the boundary values are not used)
@@ -921,17 +904,91 @@ external_driver(:, :, (end+1))          = 0; % add layer for external boundary d
 % %             NOTE: could update and use f_StaticProductionTimeseries_09042017(ODEinput, ECOTRANphysics, production_input, looky_OffshoreSurfaceBox)
 %     biomass_boundary       	= zeros(num_t, num_grps, (num_boxes+1));	% initialize; (mmole N/m3); (3D matrix: num_t X num_grps X num_boxes+1)
 % -------------------------------------------------------------------------
-  
-  
-%% step 8c: pack external_driver & biomass_boundary into ODEinput ----------
-ODEinput.looky_driver        	= looky_driver;	% driver group address(es)
-ODEinput.num_drivers            = num_drivers;
-ODEinput.external_driver     	= external_driver;      % (mmole N/m3); (3D matrix: num_t X num_drivers X num_boxes+1)
-% ODEinput.biomass_boundary       = biomass_boundary;	  % NOTE: use for defined boundary conditions (OPTION 2); (mmole N/m3); (3D matrix: num_t X num_grps X num_boxes+1)
+
+
+% step 8b: define external_driver, and externalForcing time-series --------
+external_driver             = zeros(num_t, 1, (num_boxes+1));	% initialize; (mmole N/m3);   (3D matrix: num_t X 1 X num_boxes+1); NOTE: added layer for external boundary driver (e.g. NO3) biomass for each box
+looky_driver                = looky_NO3;                        % identify driver group(s); intitialize with NO3 even if case ExternalDriver_BoundaryConcentration not used
+num_drivers                 = length(looky_driver);
+
+externalForcing             = zeros(num_t, 1, num_boxes);       % initialize; (mmole N/m3/d); (3D matrix: num_t X 1 X num_boxes)
+looky_externalForcing       = [];                               % identify externalForcing driver group(s)
+num_externalForcing_grps	= length(looky_externalForcing);    % number of externally forced groups
+
+switch switch_ExternalDriver
+    
+    case 'ExternalDriver_BoundaryConcentration'
+        % use for driving with advection & NH Line boundary nutrient concentrations
+        %	NOTE: use for 2D cases and -SOME- 3D cases
+        %	NOTE: This is the external input that enters the model domain via advection & mixing.
+        %   NOTE: driver time-series (external_driver) is a biomass density and not a rate (mmole N/m3); (3D matrix: num_t X num_drivers X num_boxes+1)
+        %   FFF:  defining for all boxes now, but will try to trim down to just the boxes with fluxes
+
+        looky_driver                            = [looky_NO3]; % SSS identify driver group(s)
+        num_drivers                          	= length(looky_driver);
+
+        NO3timeseries_conc                      = reshape(NO3timeseries_conc, [num_t, 1, num_boxes]);	% (mmole N/m3); (3D matrix: num_t X 1 X num_boxes)
+%         NH4timeseries_conc                      = reshape(NH4timeseries_conc, [num_t, 1, num_boxes]);	% (mmole N/m3); (3D matrix: num_t X 1 X num_boxes)
+
+        external_driver(:, 1, 1:num_boxes)    	= NO3timeseries_conc; 	% SSS; external boundary driver (e.g. NO3) biomass for each box; (mmole N/m3); (3D matrix: num_t X num_drivers X num_boxes)
+        % external_driver(:, 2, 1:num_boxes)	= NH4timeseries_conc; % SSS; external boundary driver (e.g. NH4) biomass for each box; (mmole N/m3); (3D matrix: num_t X num_drivers X num_boxes)
+        
+    % end (case 'ExternalDriver_BoundaryConcentration') --------------
+
+    case 'ExternalDriver_ForcedInput'
+        % use to define external forcing rate time-series
+        %   NOTE: use for 3D ROMS-BGC settings
+
+        looky_externalForcing               = [rc_lrg_phyto rc_sml_phyto]; % identify externalForcing driver group(s);	% row address(es) of externally forced input group(s) (e.g., NO3, phytoplankton, juvenile salmon)
+        num_externalForcing_grps         	= length(looky_externalForcing); % number of externally forced groups
+
+        ROMS_diatom                         = ROMS_diatom            .* (qb(rc_lrg_phyto) / 365); % convert to q rate; (mmole N/m3/d); (2D matrix: num_t X num_boxes)
+        ROMS_nanophytoplankton            	= ROMS_nanophytoplankton .* (qb(rc_sml_phyto) / 365); % convert to q rate; (mmole N/m3/d); (2D matrix: num_t X num_boxes)
+
+        ROMS_diatom                         = reshape(ROMS_diatom,            [num_t, 1, num_boxes]);	% (mmole N/m3/d); (3D matrix: num_t X 1 X num_boxes)
+        ROMS_nanophytoplankton            	= reshape(ROMS_nanophytoplankton, [num_t, 1, num_boxes]);	% (mmole N/m3/d); (3D matrix: num_t X 1 X num_boxes)
+
+        externalForcing(:, 1, :)            = ROMS_diatom; % forced external input; (mmole N/m3/d); (3D matrix: num_t X num_externalForcing_grps X num_boxes)
+        externalForcing(:, 2, :)            = ROMS_nanophytoplankton; % forced external input; (mmole N/m3/d); (3D matrix: num_t X num_externalForcing_grps X num_boxes)
+
+        % deactivate nutrient uptake by phytoplankton when driving model with BGC model output
+        %   NOTE: this change means that initial conditions MUST be defined by the BGC externalForcing driver
+        disp('USING EXTERNAL DRIVER (BGC model output) -- nutrient recycling & uptake by phytoplankton DEACTIVATED')
+        EnergyBudget_MC(:, 1:3, :)          = 0; % nutrients NOT used in food web when driving model with BGC model output
+        ConsumptionBudget_MC(2, 1:3, :)     = 0; % nitrification OFF
+        ConsumptionBudget_MC(4, 1:3, :)     = 0; % nutrient uptake OFF
+        ConsumptionBudget_MC(7, 1:3, :)     = 1; % turn on nutrient emigration to 100% to prevent build-up of nutrients in system
+    
+        % QQQ 12/2/2022 temp patch for deep boxes that don't exist in
+        % shallow seas AND to catch negative values that MIGHT be from
+        % original ROMS BGC output
+        looky_NaN = find(isnan(externalForcing));
+        externalForcing(looky_NaN) = 0;
+        looky_negative = find(externalForcing < 0);
+        externalForcing(looky_negative) = 0;
+        % QQQ -----------------
+        
+	% end (case 'ExternalDriver_ForcedInput') --------------
+        
+end % (switch_ExternalDriver) ---------------------------------------------
+% -------------------------------------------------------------------------
+
+
+% step 8c: define external forcing by geographic migrator group(s) --------
+% FFF coming soon
+% -------------------------------------------------------------------------
+
+
+% step 8d: pack external_driver, externalForcing, and biomass_boundary for ODE-solver ----------
+ODEinput.looky_driver               = looky_driver;             % driver group address(es)
+ODEinput.num_drivers                = num_drivers;
+ODEinput.external_driver            = external_driver;          % (mmole N/m3); (3D matrix: num_t X num_drivers X num_boxes+1)
+% ODEinput.biomass_boundary           = biomass_boundary;	  % NOTE: use for defined boundary conditions (OPTION 2); (mmole N/m3); (3D matrix: num_t X num_grps X num_boxes+1)
+
+ODEinput.looky_externalForcing      = looky_externalForcing;	% row address(es) of externally forced input group(s) (e.g., NO3, juvenile salmon)
+ODEinput.num_externalForcing_grps	= num_externalForcing_grps;
+ODEinput.externalForcing            = externalForcing;          % forced external input; (mmole N/m3/d); (3D matrix: num_t X num_externalForcing_grps X num_boxes)
 % *************************************************************************
-
-
-
 
 
 %% *************************************************************************
@@ -1122,12 +1179,15 @@ ConsumptionBudget_MC(5, looky_terminalBNTHdetritus, :)	= 0;
 
 
 %% *************************************************************************
+
+% QQQ change description -- this defines BoxType, not submodel food webs (food webs are defined in step 13c)
+
 % STEP 13: define individual sub-regional food webs------------------------
 %         NOTE: this can be replaced by the deliberate definition of
 %               individual sub-regional food webs
 
 % step 13a: define specific box types -------------------------------------
-%           ConsumptionBudget_BoxType
+%          ConsumptionBudget_BoxType
 %                               1) feces
 %                               2) metabolism
 %                               3) eggs (reproduction)
@@ -1136,33 +1196,41 @@ ConsumptionBudget_MC(5, looky_terminalBNTHdetritus, :)	= 0;
 %                               6) ba (biomass accumulation)
 %                               7) em (emigration); NOTE: negative for immigration
 
-% use this for 5-box 2D physics
-EnergyBudget_BoxType        = ones(num_grps, num_grps, num_boxes);	% (3D matrix: num_grps X num_grps X num_boxes)
-ConsumptionBudget_BoxType	= ones(7, num_grps, num_boxes);         % (3D matrix: 7 X num_grps X num_boxes)
-looky_SubSurfaceBoxes       = [3 5];
+switch switch_PhysicalModel
+    case '2D_upwelling'
+        % use this for 5-box 2D physics
+        EnergyBudget_BoxType        = ones(num_grps, num_grps, num_boxes);	% (3D matrix: num_grps, num_grps, num_boxes)
+        ConsumptionBudget_BoxType	= ones(7, num_grps, num_boxes);         % (3D matrix: 7, num_grps, num_boxes)
+        looky_SubSurfaceBoxes       = [3 5];
 
-EnergyBudget_BoxType(:,                 :,                          looky_SubSurfaceBoxes)	= 0; % by default, allow no trophic interactions in sub-surface boxes; (3D matrix: num_grps X num_grps X num_boxes)
-EnergyBudget_BoxType(looky_NO3,         looky_NH4,                  looky_SubSurfaceBoxes)	= 1; % allow oxidation of NH4 to NO3 (nitrification); (3D matrix: num_grps X num_grps X num_boxes)
-EnergyBudget_BoxType(looky_NH4,         looky_ANYdetritus,          looky_SubSurfaceBoxes)	= 1; % allow implicit bacterial metabolism of detritus; (3D matrix: num_grps, num_grps, num_boxes)
-EnergyBudget_BoxType(looky_ANYdetritus, looky_ANYPrimaryProducer,   looky_SubSurfaceBoxes)	= 1; % allow senescence flow of primary producers to detritus; (3D matrix: num_grps, num_grps, num_boxes)
-EnergyBudget_BoxType(looky_ANYdetritus, looky_ANYdetritus,          looky_SubSurfaceBoxes)	= 1; % allow senescence flow between detritus pools (including flow of terminal pelagic detritus to terminal benthic detritus); (3D matrix: num_grps, num_grps, num_boxes)
+        EnergyBudget_BoxType(:,                 :,                          looky_SubSurfaceBoxes)	= 0; % by default, allow no trophic interactions in sub-surface boxes; (3D matrix: num_grps, num_grps, num_boxes)
+        EnergyBudget_BoxType(looky_NO3,         looky_NH4,                  looky_SubSurfaceBoxes)	= 1; % allow oxidation of NH4 to NO3; (3D matrix: num_grps, num_grps, num_boxes)
+        EnergyBudget_BoxType(looky_NH4,         looky_ANYdetritus,          looky_SubSurfaceBoxes)	= 1; % allow implicit bacterial metabolism of detritus; (3D matrix: num_grps, num_grps, num_boxes)
+        EnergyBudget_BoxType(looky_ANYdetritus, looky_ANYPrimaryProducer,   looky_SubSurfaceBoxes)	= 1; % allow senescence flow of primary producers to detritus; (3D matrix: num_grps, num_grps, num_boxes)
+        EnergyBudget_BoxType(looky_ANYdetritus,	looky_ANYdetritus,          looky_SubSurfaceBoxes)	= 1; % allow senescence flow between detritus pools (including flow of terminal pelagic detritus to terminal benthic detritus); (3D matrix: num_grps, num_grps, num_boxes)
 
-ConsumptionBudget_BoxType(:,            :,                          looky_SubSurfaceBoxes)	= 0; % by default, allow no trophic interactions in sub-surface boxes; (3D matrix: 7 X num_grps X num_boxes)
-ConsumptionBudget_BoxType(2,            looky_NH4,                  looky_SubSurfaceBoxes)	= 1; % allow oxidation of NH4 to NO3 (nitrification); QQQ check logic of this to match EnergyBudget_BoxType
-ConsumptionBudget_BoxType(2,            looky_ANYdetritus,          looky_SubSurfaceBoxes)	= 1; % allow implicit bacterial metabolism of detritus
-ConsumptionBudget_BoxType(5,            looky_ANYPrimaryProducer,   looky_SubSurfaceBoxes)	= 1; % allow senescence flow of primary producers to detritus
-ConsumptionBudget_BoxType(5,            looky_ANYdetritus,          looky_SubSurfaceBoxes)	= 1; % allow senescence flow between detritus pools (including flow of terminal pelagic detritus to terminal benthic detritus)
-ConsumptionBudget_BoxType(7,            looky_terminalBNTHdetritus,	looky_SubSurfaceBoxes)	= 1; % allow for sequestration of benthic detritus via emigration (em) in sub-surface boxes
+        ConsumptionBudget_BoxType(:,          	:,                          looky_SubSurfaceBoxes)	= 0; % by default, allow no trophic interactions in sub-surface boxes; (3D matrix: num_grps, num_grps, num_boxes)
+        ConsumptionBudget_BoxType(2,            looky_NH4,                  looky_SubSurfaceBoxes)  = 1; % allow oxidation of NH4 to NO3; QQQ check logic of this to match EnergyBudget_BoxType
+        ConsumptionBudget_BoxType(2,            looky_ANYdetritus,          looky_SubSurfaceBoxes)  = 1; % allow implicit bacterial metabolism of detritus
+        ConsumptionBudget_BoxType(5,            looky_ANYPrimaryProducer,   looky_SubSurfaceBoxes)  = 1; % allow senescence flow of primary producers to detritus
+        ConsumptionBudget_BoxType(5,            looky_ANYdetritus,          looky_SubSurfaceBoxes)  = 1; % allow senescence flow between detritus pools (including flow of terminal pelagic detritus to terminal benthic detritus)
+        ConsumptionBudget_BoxType(7,            looky_terminalBNTHdetritus,	looky_SubSurfaceBoxes)	= 1; % allow for sequestration of benthic detritus via emigration (em) in sub-surface boxes
+	
+        % QQQ for 2D cross-shelf physics ONLY
+        EnergyBudget_BoxType(:,                 looky_bnthNH4,                                :)	= 0; % QQQ set all trophic flows of bnthNH4 to 0 in all boxes; bnthNH4 will get pooled into plgcNH4 and that is when it becomes available to the food web
+        disp('QQQ NOTICE: no trophic outflow of bnthNH4 in any boxes, EnergyBudget_BoxType rows in bnthNH4 column are set to 0')
+        ConsumptionBudget_BoxType(:,            looky_bnthNH4,                                :)	= 0; % QQQ set all trophic flows of bnthNH4 to 0 in all boxes; bnthNH4 will get pooled into plgcNH4 and that is when it becomes available to the food web
+        disp('QQQ NOTICE: no trophic outflow of bnthNH4 in any boxes, ConsumptionBudget_BoxType rows in bnthNH4 column are set to 0')
+        
+	% end (case '2D_upwelling') --------------
+        
+    case '3D_ROMS'
+        % use this for vertically-resolved models and 3D models
+        EnergyBudget_BoxType        = ones(num_grps, num_grps, num_boxes);	% (3D matrix: num_grps X num_grps X num_boxes)
+        ConsumptionBudget_BoxType	= ones(7, num_grps, num_boxes);         % (3D matrix: 7 X num_grps X num_boxes)
+ 	% end (case '3D_ROMS') --------------
 
-% NOTE: for 2D cross-shelf physics ONLY
-EnergyBudget_BoxType(:,                 looky_bnthNH4,                                :)	= 0; % set all trophic flows of bnthNH4 to 0 in all boxes; bnthNH4 will get pooled into plgcNH4 and that is when it becomes available to the food web
-if ShowOutput
-    disp('NOTICE: no trophic outflow of bnthNH4 in any boxes, EnergyBudget_BoxType rows in bnthNH4 column are set to 0')
-end
-ConsumptionBudget_BoxType(:,            looky_bnthNH4,                                :)	= 0; % set all trophic flows of bnthNH4 to 0 in all boxes; bnthNH4 will get pooled into plgcNH4 and that is when it becomes available to the food web
-if ShowOutput
-    disp('NOTICE: no trophic outflow of bnthNH4 in any boxes, ConsumptionBudget_BoxType rows in bnthNH4 column are set to 0')
-end
+end % (switch switch_PhysicalModel) ---------------------------------------
 % -------------------------------------------------------------------------
 
 
@@ -1172,10 +1240,7 @@ ODEinput.ConsumptionBudget_BoxType      = ConsumptionBudget_BoxType;	% distingui
 % *************************************************************************
 
 
-
-
-
-% *************************************************************************
+%% *************************************************************************
 % STEP 14: run ODE for each MonteCarlo model-------------------------------
 
 % step 14a: loop through each MonteCarlo model or treatment ---------------
@@ -1453,89 +1518,192 @@ for MonteCarlo_loop = 1:num_MC
     % *********************************************************************
 
 
-
-
-
     %% *********************************************************************
-    % STEP 15: calculate INITIAL production rate conditions---------------
+	% STEP 15: calculate INITIAL production rate conditions---------------
     %           NOTE: (INITIAL production = consumption inflow)
     %           NOTE: several options are provided
+    %           QQQ after debugging, use a consistent summer season base time (consolodate t_initial & t_mean calls) 
     
     t_initial                               = 1;
     
-    % step 15a: run 1 of several options for defining initial condition rates
+	% step 15a: run 1 of several options for defining initial condition rates
     switch switch_INITIALproduction
-    
-        case 'INITIALproduction_pb'	% METHOD 1: use for driving initial model conditions with primary production defined by p = [(p/b) * b]
-        %           NOTE: actually q = [(q/b) * b] because p & q are same thing for primary producers
-            
-            if ShowOutput
-                disp('INITIAL CONDITIONS: from primary production defined by p = [(p/b) * b')
+
+        case 'INITIALproduction_MichaelisMenton' % METHOD 1: use for driving with primary production defined by Michaelis-Menton uptake
+                                                  % QQQ this section needs proofing in ECOTRAN 2
+                                                  
+            if strcmp(switch_ExternalDriver, 'ExternalDriver_ForcedInput')
+                error('ERROR: You MUST use BioGeoChemical model output for initial conditions when driving model as ExternalDriver_ForcedInput')
             end
         
-            biomass_PrimaryProducer_t                                   = current_biomass(looky_ANYPrimaryProducer, :);      	% biomass of primary producers in current MonteCarlo model; (t WWT/km2); (2D matrix: num_ANYPrimaryProd X num_boxes)
-            pb_PrimaryProducer_t                             	        = current_pb(t_initial, looky_ANYPrimaryProducer, :);	% pb of primary producers in current MonteCarlo model;      (1/d);       (3D matrix: 1 X num_ANYPrimaryProd X num_boxes); NOTE: pb = qb for primary producers; FFF allow for pb changes throughout the year
-            
+            biomass_PrimaryProducer_t                           = current_biomass(looky_ANYPrimaryProducer, :);         % biomass of primary producers in current MonteCarlo model; (t WWT/km2); (2D matrix: num_ANYPrimaryProd X num_boxes)
+            biomass_macroalgae_t                                = current_biomass(looky_macroalgae, :);                 % biomass of Macroalgae in current MonteCarlo model; (t WWT/km2); (2D matrix: num_macroalgae X num_boxes)
+            pb_PrimaryProducer_t                                = current_pb(t_initial, looky_ANYPrimaryProducer, :);	% pb of primary producers in current MonteCarlo model; (1/d); (3D matrix: 1 X num_ANYPrimaryProd X num_boxes)
+            pb_macroalgae_t                                     = current_pb(t_initial, looky_macroalgae, :);           % pb of Macroalgae in current MonteCarlo model; (1/d); (3D matrix: 1 X num_macroalgae X num_boxes)
+
+            % special case to accomodate any macroalgae
+            production_PrimaryProducer_WWT                      = reshape(biomass_PrimaryProducer_t, [1, num_ANYPrimaryProd, num_boxes]) .* pb_PrimaryProducer_t;       % (t WWT/km2/d); (3D matrix: 1 X num_ANYPrimaryProd X num_boxes)
+            production_macroalgae_WWT                           = reshape(biomass_macroalgae_t, [1, num_macroalgae, num_boxes])          .* pb_macroalgae_t;            % (t WWT/km2/y); (3D matrix: 1 X num_macroalgae X num_boxes)
+            ProductionFraction_macroalgae                       = production_macroalgae_WWT   ./ repmat(sum(production_PrimaryProducer_WWT), [1, num_macroalgae, 1]);	% macroalgae fraction(s) of total primary production based on EwE p=b*pb; (3D matrix: 1 X num_macroalgae X num_boxes)
+            ProductionFraction_macroalgae(isnan(ProductionFraction_macroalgae)) = 0;                                                         % fix div/0 NaNs
+            ProductionFraction_macroalgae                       = reshape(ProductionFraction_macroalgae, [num_macroalgae, 1, num_boxes]);    % (3D matrix: num_macroalgae X 1 X num_boxes)
+
             % primary producer biomass conversion from (t WWT/km2) to (mmole N/m3)
-            EuphoticDepth_t                                             = interp1(t_grid, EuphoticDepth, t_initial);            % euphotic zone depth @ t; (m); (horizontal vector: 1 X num_boxes)
-            EuphoticDepth_t                                             = repmat(EuphoticDepth_t, [num_ANYPrimaryProd, 1]);     % replicate box heights for each primary producer; (m); (2D matrix: num_ANYPrimaryProd X num_boxes);
-            biomass_PrimaryProducer_t                                   = biomass_PrimaryProducer_t * (1/(1000*1000));          % area to volumetric conversion; (t WWT/m2); (2D matrix: num_ANYPrimaryProd X num_boxes);
-            biomass_PrimaryProducer_t                                   = biomass_PrimaryProducer_t .* (1./EuphoticDepth_t);    % area to volumetric conversion; (t WWT/m3); (2D matrix: num_ANYPrimaryProd X num_boxes); NOTE use of EuphoticDepth instead of MLD because we are starting out with phyto biomasses defined as vertically integrated over whole boxes
-            biomass_PrimaryProducer_t                                   = biomass_PrimaryProducer_t * 1000000;                  % (g WWT/m3);   (2D matrix: num_ANYPrimaryProd X num_boxes);
-            biomass_PrimaryProducer_t                                   = biomass_PrimaryProducer_t * 1000;                     % (mg WWT/m3);  (2D matrix: num_ANYPrimaryProd X num_boxes);
-            biomass_PrimaryProducer_t                                   = biomass_PrimaryProducer_t * (1/WWT_to_C);             % (mg C/m3);    (2D matrix: num_ANYPrimaryProd X num_boxes);
-            biomass_PrimaryProducer_t                                   = biomass_PrimaryProducer_t * (1/atomic_mass_C);        % (mmole C/m3); (2D matrix: num_ANYPrimaryProd X num_boxes);
-            biomass_PrimaryProducer_t                                   = biomass_PrimaryProducer_t * (1/C_to_N_phytoplankton); % (mmole N/m3); (2D matrix: num_ANYPrimaryProd X num_boxes);
+            EuphoticDepth_t                                     = interp1(t_grid, EuphoticDepth, t_initial);            % euphotic zone depth @ t; (m); (horizontal vector: 1 X num_boxes)
+            EuphoticDepth_t                                     = repmat(EuphoticDepth_t, [num_ANYPrimaryProd, 1]);     % replicate box heights for each primary producer; (m); (2D matrix: num_ANYPrimaryProd X num_boxes);
+            biomass_PrimaryProducer_t                           = biomass_PrimaryProducer_t * (1/(1000*1000));          % area to volumetric conversion; (t WWT/m2); (2D matrix: num_ANYPrimaryProd X num_boxes);
+            biomass_PrimaryProducer_t                           = biomass_PrimaryProducer_t .* (1./EuphoticDepth_t);    % area to volumetric conversion; (t WWT/m3); (2D matrix: num_ANYPrimaryProd X num_boxes); NOTE use of EuphoticDepth instead of MLD because we are starting out with phyto biomasses defined as vertically integrated over whole boxes
+            biomass_PrimaryProducer_t                           = biomass_PrimaryProducer_t * 1000000;                  % (g WWT/m3);   (2D matrix: num_ANYPrimaryProd X num_boxes);
+            biomass_PrimaryProducer_t                           = biomass_PrimaryProducer_t * 1000;                     % (mg WWT/m3);  (2D matrix: num_ANYPrimaryProd X num_boxes);
+            biomass_PrimaryProducer_t                           = biomass_PrimaryProducer_t * (1/WWT_to_C);             % (mg C/m3);    (2D matrix: num_ANYPrimaryProd X num_boxes);
+            biomass_PrimaryProducer_t                           = biomass_PrimaryProducer_t * (1/atomic_mass_C);        % (mmole C/m3); (2D matrix: num_ANYPrimaryProd X num_boxes);
+            biomass_PrimaryProducer_t                           = biomass_PrimaryProducer_t * (1/C_to_N_phytoplankton); % (mmole N/m3); (2D matrix: num_ANYPrimaryProd X num_boxes);
+
+            biomass_PrimaryProducer_t                           = reshape(biomass_PrimaryProducer_t, [num_ANYPrimaryProd, 1, num_boxes]); % (mmole N/m3); (3D matrix: num_ANYPrimaryProd X 1 X num_boxes)
+            NO3_t                                               = repmat(NO3initial_rate, [num_ANYPrimaryProd, 1]);       	% (mmole NO3/m3); (2D matrix: num_ANYPrimaryProd X num_boxes)
+            % NH4_t                                               = repmat(NH4initial_rate, [num_ANYPrimaryProd, 1]);        	% (mmole NH4/m3); (2D matrix: num_ANYPrimaryProd X num_boxes)
+            NO3_t                                               = reshape(NO3_t, [num_ANYPrimaryProd, 1, num_boxes]);	% (mmole N/m3); (3D matrix: num_grps X 1 X num_boxes)
+            % NH4_t                                               = reshape(NH4_t, [num_ANYPrimaryProd, 1, num_boxes]);	% (mmole N/m3); (3D matrix: num_grps X 1 X num_boxes)
+            Io_t                                                = interp1(t_grid, Io, t_mean);                       	% surface PAR light intensity @ t; daily integrated solar raditation at ocean surface averaged across 24 hours; (W m^-2 h^-1); (scaler); NOTE: using t_mean rather than t_initial
+            MLD_t                                               = interp1(t_grid, MLD, t_mean);                      	% MLD @ t; (m); (scaler)
+            NH4fraction_bnth                                    = zeros(num_ANYPrimaryProd, 1, num_boxes);            	% value 0 - 1; (3D matrix: num_ANYPrimaryProd X 1 X num_boxes); (for Michaelis-Menten calcs); for initial conditions, any NH4 is asigned as pelagic
+
+            [Q_cp_NO3, Q_cp_NH4, Q_cp_plgcNH4, Q_cp_bnthNH4, PB_MichaelisMenten] = f_MichaelisMenten_05152016(ODEinput, biomass_PrimaryProducer_t, NO3_t, NH4_t, NH4fraction_bnth, Io_t, MLD_t); % phytoplankton uptake rate of NO3 & NH4 (mmole N/m3/d) & pb @ t as calculated from MichaelisMenton uptake (1/y); (3D matrix: num_ANYPrimaryProd X 1 X num_boxes) QQQ proof code for ECOTRAN II
+            production_initial_PrimaryProducer                  = Q_cp_NO3 + Q_cp_NH4;                                                      % phytoplankton production rate; (mmole N/m3/d); (3D matrix: num_ANYPrimaryProd X 1 X num_boxes)
+            production_initial_PrimaryProducer               	= squeeze(production_initial_PrimaryProducer);                                        % (mmole N/m3/d); (2D matrix: num_ANYPrimaryProd X num_boxes)
+            production_initial_driver                        	= zeros(num_grps, num_boxes);                                          % initialize; (2D matrix: num_grps X num_boxes)
+            production_initial_driver(looky_ANYPrimaryProducer, :)	= production_initial_PrimaryProducer;                                                 % (2D matrix: num_grps X num_boxes)
+            if num_macroalgae > 0
+                production_initial_driver(looky_macroalgae, :)      = repmat(sum(production_initial_PrimaryProducer), [num_macroalgae, 1]) .* ProductionFraction_macroalgae; % (2D matrix: num_grps X num_boxes)
+            end
+            production_initial_driver                           = reshape(production_initial_driver, [num_grps, 1, num_boxes]);          % (3D matrix: num_grps X 1 X num_boxes)
+            production_initial_driver                           = reshape(production_initial_driver, [1, num_grps, num_boxes]);          % (3D matrix: 1 X num_grps X num_boxes) 
             
+            % finalize initial condition calculations
+            [production_initial, fname_InitialProductionRates]	= f_InitialProductionRates_02012022(ODEinput, production_initial_driver, t_initial);  % initial or mean production rates (actually consumption inflow); (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE: code does NOT make transfer of bnthNH4 from surface to sub-surface boxes
+            
+            % paste in initial NO3 & NH4 input rates
+            production_initial(looky_NO3, :)      	= NO3initial_rate;   % append initial NO3 input rates to NO3 rows; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
+            % production_initial(looky_plgcNH4, :)    = NH4initial_rate;   % append initial NH4 input rates to NO3 rows; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
+        % end (case 'INITIALproduction_MichaelisMenton') --------------
+        
+        
+        case 'INITIALproduction_pb'	% METHOD 2: use for driving initial model conditions with primary production defined by p = [(p/b) * b]
+                                        %           NOTE: actually q = [(q/b) * b] because p & q are same thing for primary producers
+        
+            if strcmp(switch_ExternalDriver, 'ExternalDriver_ForcedInput')
+                error('ERROR: You MUST use BioGeoChemical model output for initial conditions when driving model as ExternalDriver_ForcedInput')
+            end
+                                        
+            biomass_PrimaryProducer_t                           = current_biomass(looky_ANYPrimaryProducer, :);      	% biomass of primary producers in current MonteCarlo model; (t WWT/km2); (2D matrix: num_ANYPrimaryProd X num_boxes)
+            pb_PrimaryProducer_t                             	= current_pb(t_initial, looky_ANYPrimaryProducer, :);	% pb of primary producers in current MonteCarlo model;      (1/d);       (3D matrix: 1 X num_ANYPrimaryProd X num_boxes); NOTE: pb = qb for primary producers; FFF allow for pb changes throughout the year
+
+            % primary producer biomass conversion from (t WWT/km2) to (mmole N/m3)
+            EuphoticDepth_t                                     = interp1(t_grid, EuphoticDepth, t_initial);            % euphotic zone depth @ t; (m); (horizontal vector: 1 X num_boxes)
+            EuphoticDepth_t                                     = repmat(EuphoticDepth_t, [num_ANYPrimaryProd, 1]);     % replicate box heights for each primary producer; (m); (2D matrix: num_ANYPrimaryProd X num_boxes);
+            biomass_PrimaryProducer_t                           = biomass_PrimaryProducer_t * (1/(1000*1000));          % area to volumetric conversion; (t WWT/m2); (2D matrix: num_ANYPrimaryProd X num_boxes);
+            biomass_PrimaryProducer_t                           = biomass_PrimaryProducer_t .* (1./EuphoticDepth_t);    % area to volumetric conversion; (t WWT/m3); (2D matrix: num_ANYPrimaryProd X num_boxes); NOTE use of EuphoticDepth instead of MLD because we are starting out with phyto biomasses defined as vertically integrated over whole boxes
+            biomass_PrimaryProducer_t                           = biomass_PrimaryProducer_t * 1000000;                  % (g WWT/m3);   (2D matrix: num_ANYPrimaryProd X num_boxes);
+            biomass_PrimaryProducer_t                           = biomass_PrimaryProducer_t * 1000;                     % (mg WWT/m3);  (2D matrix: num_ANYPrimaryProd X num_boxes);
+            biomass_PrimaryProducer_t                           = biomass_PrimaryProducer_t * (1/WWT_to_C);             % (mg C/m3);    (2D matrix: num_ANYPrimaryProd X num_boxes);
+            biomass_PrimaryProducer_t                           = biomass_PrimaryProducer_t * (1/atomic_mass_C);        % (mmole C/m3); (2D matrix: num_ANYPrimaryProd X num_boxes);
+            biomass_PrimaryProducer_t                           = biomass_PrimaryProducer_t * (1/C_to_N_phytoplankton); % (mmole N/m3); (2D matrix: num_ANYPrimaryProd X num_boxes);
+
             % initial production (actually consumption inflow) driver vector for each Box; (mmole N/m3/d); (3D matrix: 1 X num_groups X num_boxes)
             production_initial_PrimaryProducer                        	= reshape(biomass_PrimaryProducer_t, [1, num_ANYPrimaryProd, num_boxes]) .* pb_PrimaryProducer_t;    % primary production rate; (mmole N/m3/d); (3D matrix: 1 X num_ANYPrimaryProd X num_boxes)
             production_initial_driver                                   = zeros(1, num_grps, num_boxes);        % initialize DriverProductionVector; (3D matrix: 1 X num_grps X num_boxes)
             production_initial_driver(1, looky_ANYPrimaryProducer, :)	= production_initial_PrimaryProducer;	% plug in primary production rates; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
             % end Method 2 ----
-            
+
             % finalize initial condition calculations
-            [production_initial, fname_InitialProductionRates]          = f_InitialProductionRates_02012022(ODEinput, production_initial_driver, t_initial,ShowOutput);  % initial or mean production rates (actually consumption inflow); (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE: code does NOT make transfer of bnthNH4 from surface to sub-surface boxes
+            [production_initial, fname_InitialProductionRates] = f_InitialProductionRates_02012022(ODEinput, production_initial_driver, t_initial);  % initial or mean production rates (actually consumption inflow); (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE: code does NOT make transfer of bnthNH4 from surface to sub-surface boxes
             
             % paste in initial NO3 & NH4 input rates
-            production_initial(looky_NO3, :)      	                    = NO3initial_rate;   % append initial NO3 input rates to NO3 rows; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
-            % production_initial(looky_plgcNH4, :)                        = NH4initial_rate;   % append initial NH4 input rates to NO3 rows; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
-        % end (case 'INITIALproduction_pb') -------------------------------
+            production_initial(looky_NO3, :)      	= NO3initial_rate;   % append initial NO3 input rates to NO3 rows; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
+            % production_initial(looky_plgcNH4, :)    = NH4initial_rate;   % append initial NH4 input rates to NO3 rows; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
+        % end (case 'INITIALproduction_pb') --------------
+            
         
-        case 'INITIALproduction_SubModel'	% METHOD 2: use for driving initial model conditions with values loaded along with regional sub-model definitions 
+        case 'INITIALproduction_SubModel'	% METHOD 3: use for driving initial model conditions with values loaded along with regional sub-model definitions 
+                                            % For example, use for oceanic GoMexOcn, CNP models----
+                                            % CBB: This is where we add in initial conditions from a long run from a different file (save end 5-10 yrs re_Y average consumption rate).
             
-            if ShowOutput
-                disp('INITIAL CONDITIONS: from external file(s)')
-            end
-            
-            fname_InitialProductionRates	= 'pre-defined in independent sub-model';
-            production_initial              = [SubRegion1.production_initial SubRegion2.production_initial SubRegion3.production_initial SubRegion4.production_initial SubRegion5.production_initial]; % initial q; (mmoles N/m3/d); (2D matrix: num_grps X num_boxes)
-            
-            % % paste in initial NO3 & NH4 input rates
-            % production_initial(looky_NO3, :)        = NO3initial_rate;   % append initial NO3 input rates to NO3 rows; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
-            % production_initial(looky_plgcNH4, :)  = NH4initial_rate;   % append initial NH4 input rates to NO3 rows; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
-            
-        % end case (INITIALproduction_SubModel) ---------------------
+            disp('INITIAL CONDITIONS: final 50-yr mean of 100 year repeating ERD_CUTI run')
+            load('CUTIinitial_17-Apr-2022.mat', 'production_initial'); % initial or mean production rates (actually consumption inflow); (mmole N/m3/d); (2D matrix: num_grps X num_boxes)
+                                            
+            % paste in initial NO3 & NH4 input rates
+            production_initial(looky_NO3, :)      	= NO3initial_rate;   % append initial NO3 input rates to NO3 rows; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
+%             production_initial(looky_plgcNH4, :)    = NH4initial_rate;   % append initial NH4 input rates to NO3 rows; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
+
+
+% % %             production_initial_driver                           = zeros(1, num_grps, num_boxes);        % initialize DriverProductionVector; (3D matrix: 1 X num_grps X num_boxes)
+% % %             production_initial_driver(1, looky_NO3, :)          = NO3initial_rate;	% plug in NO3 input rate; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
+% % % %            
+% % %             load('production_last30perc_triCUTIrun.mat') % from function: f_init_conditions_calc_04112022_CB;  % QQQ NH4 uptake turned OFF; initial or mean production rates (actually consumption inflow); (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE: code does NOT make transfer of bnthNH4 from surface to sub-surface boxes
+% % %             production_initial = re_Y_dummy_mean;
+% % % 
+% % %             [fname_InitialProductionRates]	= f_InitialProductionRates_02012022(ODEinput, production_initial_driver, t_initial);  % QQQ NH4 uptake turned OFF; initial or mean production rates (actually consumption inflow); (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE: code does NOT make transfer of bnthNH4 from surface to sub-surface boxes
+% % % 
+% % %             %for GOM: production_initial = [EPIPELAGIC.production_initial MESOPELAGIC.production_initial BATHYPELAGIC.production_initial BENTHIC.production_initial]; % initial q; (mmoles N/m3/d); (2D matrix: num_grps X num_boxes)
+% % %             
+% % %             % paste in initial NO3 & NH4 input rates
+% % %             production_initial(looky_NO3, :)      	= NO3initial_rate;   % append initial NO3 input rates to NO3 rows; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
+% % % %             production_initial(looky_plgcNH4, :)    = NH4initial_rate;   % append initial NH4 input rates to NO3 rows; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
+        
+        % end (case 'INITIALproduction_SubModel') --------------
     
-    
-        case 'INITIALproduction_nutrients'	% METHOD 3: use for driving initial model conditions with mean annual nutrient input rates
-        %           NOTE: NH4 uptake is deactivated in f_InitialProductionRates_02012022, so production_initial will be lower for METHOD 4 than for METHOD 2 (the latter implicitly includes recylced primary production)
             
-            if ShowOutput
-                disp('INITIAL CONDITIONS: calculated from nutrient input rate')
+        case 'INITIALproduction_nutrients'	% METHOD 4: use for driving initial model conditions with mean annual nutrient input rates
+                                            %           NOTE: NH4 uptake is deactivated in f_InitialProductionRates_02012022, so production_initial will be lower for METHOD 4 than for METHOD 2 (the latter implicitly includes recylced primary production)
+            
+            disp('INITIAL CONDITIONS: calculated from nutrient input rate')
+            
+            if strcmp(switch_ExternalDriver, 'ExternalDriver_ForcedInput')
+                error('ERROR: You MUST use BioGeoChemical model output for initial conditions when driving model as ExternalDriver_ForcedInput')
             end
             
             production_initial_driver                           = zeros(1, num_grps, num_boxes);        % initialize DriverProductionVector; (3D matrix: 1 X num_grps X num_boxes)
             production_initial_driver(1, looky_NO3, :)          = NO3initial_rate;	% plug in NO3 input rate; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
             % production_initial_driver(1, looky_plgcNH4, :)      = NH4initial_rate;	% plug in NH4 input rate; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
-            
+
             % finalize initial condition calculations
-            [production_initial, fname_InitialProductionRates]	= f_InitialProductionRates_02012022(ODEinput, production_initial_driver, t_initial,ShowOutput);  % QQQ NH4 uptake turned OFF; initial or mean production rates (actually consumption inflow); (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE: code does NOT make transfer of bnthNH4 from surface to sub-surface boxes
-            
+            [production_initial, fname_InitialProductionRates]	= f_InitialProductionRates_02012022(ODEinput, production_initial_driver, t_initial);  % QQQ NH4 uptake turned OFF; initial or mean production rates (actually consumption inflow); (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE: code does NOT make transfer of bnthNH4 from surface to sub-surface boxes
+
             % paste in initial NO3 & NH4 input rates
             production_initial(looky_NO3, :)      	= NO3initial_rate;   % append initial NO3 input rates to NO3 rows; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
             % production_initial(looky_plgcNH4, :)    = NH4initial_rate;   % append initial NH4 input rates to NO3 rows; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
-        % end (case 'INITIALproduction_nutrients') ------------------------
+        
+        % end (case 'INITIALproduction_nutrients') --------------
+            
+        
+        case 'INITIALproduction_BioGeoChemicalModel' % METHOD 5: use for driving initial model conditions with mean annual ROMS-BioGeoChemichal Primary Production rates
+
+            production_initial_driver                           = zeros(1, num_grps, num_boxes);        % initialize DriverProductionVector; (3D matrix: 1 X num_grps X num_boxes)
+           
+            production_initial_driver(1, rc_lrg_phyto, :)    	= mean(externalForcing(:, 1, :), 1);	% plug in mean ROMS_diatom input rate; average over entire time-series; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
+            production_initial_driver(1, rc_sml_phyto, :)     	= mean(externalForcing(:, 2, :), 1);	% plug in mean ROMS_nanophytoplankton input rate; average over entire time-series; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
     
+            % finalize initial condition calculations
+            [production_initial, fname_InitialProductionRates]	= f_InitialProductionRates_02012022(ODEinput, production_initial_driver, t_initial);  % QQQ NH4 uptake turned OFF; initial or mean production rates (actually consumption inflow); (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE: code does NOT make transfer of bnthNH4 from surface to sub-surface boxes
+
+            % paste in initial NO3 & NH4 input rates
+            production_initial(looky_NO3, :)                    = 0;   % initial NO3 are 0 when driving with ROMS-BGC output; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
+            production_initial(looky_plgcNH4, :)                = 0;   % initial NH4 are 0 when driving with ROMS-BGC output; (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE the inconsistency in row definitions, nutrient values are concentrations but all other values are production rates!!! QQQ change this to NO3 input rates?
+            
+            % QQQ 12/2/2022 temp patch to remove NaNs (for deep-layer boxes that don't really exist in shallow seas)
+            looky_NaN = find(isnan(production_initial));
+            production_initial(looky_NaN) = 0;
+            % QQQ -----
+            
+            % CCC 1/18/2023 Change initial conditions for those species
+            % going extinct in base model
+             production_initial(102, :)                 = production_initial(102, :) * 0.25;
+             production_initial([49, 50, 53, 104], :)   = production_initial([49, 50, 53 ,104],:) * 0.5;
+            % QQQ -----
+            % QQQ -->> This issue may be due to applying T-L scaling to non-fish groups??
+            
+        % end (case 'INITIALproduction_BioGeoChemicalModel') --------------
+        
     end % (switch switch_INITIALproduction) -------------------------------
     
     production_initial                  	= reshape(production_initial, [num_grps, 1, num_boxes]);	% reshape boxes as layers; (3D matrix: num_grps X 1 X num_boxes); (mmole N/m3/d)
@@ -1543,95 +1711,157 @@ for MonteCarlo_loop = 1:num_MC
     % ---------------------------------------------------------------------
     
     
-    % step 15b: pack more initial conditions for ODE ----------------------
+    % step 14b: pack more initial conditions for ODE ----------------------
     ODEinput.production_initial            	= production_initial;               % production rates to use as initial conditions; (mmole N/m3/d); (3D matrix: num_grps X 1 X num_boxes); NOTE: used in ODE only for special cases of step-thru debugging or for quadratic functional responses
     ODEinput.productionC_initial_repmat   	= productionC_initial_repmat;       % initial conditions reshaped; (mmole N/m3/d); (3D matrix: num_grps X num_grps X num_boxes); NOTE: replicated vertical vectors across columns
     % *********************************************************************
 
 
-
-
-
-    %% ********************************************************************
+    %% *********************************************************************
     % STEP 16: solve the dynamic model-------------------------------------
     switch switch_ODEsolver
-        
+  
         case 'CppSolver' % C++ solver
-        % NOTE: >> mex mex_ECOTRANode_11272020.cpp -I/usr/local/include/ % command to compile mex function
-            
-            if ShowOutput
-                disp('NOTE: using C++ ODE solver')
-            end
-            
-            % step 16a: prepare ECOTRAN variables for using C++ ODE solver mex function
-            %           Pack parameters & drivers along proper dimensions.
-            if ShowOutput
-                disp('preparing variables for C++ ODE solver...')
-            end
-            
-            [AddressStruct, TrophicStruct, FuncRespStruct, PhysicsStruct] = f_PrepMexODE_2D_08212022(ODEinput); % pack variables to send to ODE solver QQQ needs ThorntonLessem
-            % -------------------------------------------------------------
-            
-            % step 16b: run the model in C++ ------------------------------
-            if ShowOutput
-                disp(['Running C++ solver: ' fname_ECOTRANode])
-            end
-            
-            fname_ECOTRANode                 = 'mex_ECOTRANode_2D_08222022';	% ODE solver name
-            fname_PhysicalFlux_intraODE      = 'NA';	% SSS            
-            
-            tic
-            [output_Cpp]            = mex_ECOTRANode_2D_08222022(AddressStruct, TrophicStruct, FuncRespStruct, PhysicsStruct); % run the ODE solver
-            time_ODE                = toc
-            
-            store_T                 = output_Cpp.mat_obs_times; % (d); (vertical vector: num_t X 1)
-            store_ProductionRates	= output_Cpp.mat_obs_states; % (mmole N/m3/d); (2D matrix: num_t X (num_grps*num_boxes))
-            % -------------------------------------------------------------
-            
-            % step 16c: unstack result to recover variable structure of spatial boxes
-            re_Y                    = reshape(store_ProductionRates, [num_t, num_grps, num_boxes]); % (mmole N/m3/d); (3D matrix: time X groups X num_boxes)
-            % -------------------------------------------------------------
+            % NOTE: >> mex mex_ECOTRANode_11272020.cpp -I/usr/local/include/ % compile mex function
+            disp('NOTE: using C++ ODE solver')
 
-        % end (case 'CppSolver') ------------------------------------------
-        
-        
+            switch switch_PhysicalModel
+                case '2D_upwelling'
+
+                    % step 15a: prepare ECOTRAN variables for using C++ ODE solver mex function
+                    %           Pack parameters & drivers along proper dimensions.
+                    disp('prepare variables for C++ ODE solver... (* 2D shelf physics)')
+                    [AddressStruct, TrophicStruct, FuncRespStruct, PhysicsStruct] = f_PrepMexODE_2D_08212022(ODEinput); % pack variables to send to ODE solver QQQ needs ThorntonLessem
+                    % -----------------------------------------------------
+
+                    % step 15b: run the model in C++ ----------------------
+                    fname_ECOTRANode         	= 'mex_ECOTRANode_2D_08222022';	% ODE solver name
+                    disp(['Running C++ ODE solver (* 2D shelf physics): ' fname_ECOTRANode])
+                    fname_PhysicalFlux_intraODE	= 'NA';	% SSS            
+                    tic
+                    [output_Cpp]                = mex_ECOTRANode_2D_08222022(AddressStruct, TrophicStruct, FuncRespStruct, PhysicsStruct); % run the ODE solver
+                    time_ODE                    = toc
+                    store_T                     = output_Cpp.mat_obs_times; % (d); (vertical vector: num_t X 1)
+                    store_ProductionRates       = output_Cpp.mat_obs_states; % (mmole N/m3/d); (2D matrix: num_t X (num_grps*num_boxes))
+                    % -----------------------------------------------------
+                    
+                    % step 15c: unstack result to recover variable structure of spatial boxes
+                    re_Y                        = reshape(store_ProductionRates, [num_t, num_grps, num_boxes]); % (mmole N/m3/d); (3D matrix: time X groups X num_boxes)
+                    % -----------------------------------------------------
+                    
+                % end (case '2D_upwelling') --------------
+
+                case '3D_ROMS'
+
+                    fname_PhysicalFlux_intraODE	= 'NA';
+                    
+                    switch switch_ExternalDriver
+                        
+                        case 'ExternalDriver_BoundaryConcentration'
+                            
+                            % step 15a: prepare ECOTRAN variables for using C++ ODE solver mex function
+                            %           Pack parameters & drivers along proper dimensions.
+                            disp('prepare variables for C++ ODE solver using NH line boundary drivers...')
+                            [AddressStruct, TrophicStruct, FuncRespStruct, PhysicsStruct] = f_PrepMexODE_08212022(ODEinput); % pack variables to send to ODE solver; WITH Thornton-Lessem
+                            % ---------------------------------------------
+
+                            % step 15b: run the model in C++ --------------
+                            fname_ECOTRANode         	= 'mex_ECOTRANode_08222022';
+                            disp(['Running C++ solver using NH line boundary drivers: ' fname_ECOTRANode])
+                            fname_PhysicalFlux_intraODE	= 'NA';
+                            tic            
+                            [output_Cpp]                = mex_ECOTRANode_08222022(AddressStruct, TrophicStruct, FuncRespStruct, PhysicsStruct); % WITH Thornton-Lessem
+                            time_ODE                    = toc
+                            % ---------------------------------------------
+                            
+                        % end (case 'ExternalDriver_BoundaryConcentration')
+                        
+                        
+                        case 'ExternalDriver_ForcedInput'
+                        
+                            % step 15a: prepare ECOTRAN variables for using C++ ODE solver mex function
+                            %           Pack parameters & drivers along proper dimensions.
+                            disp('prepare variables for C++ ODE solver using ROMS BGC drivers...')
+                            [AddressStruct, TrophicStruct, FuncRespStruct, PhysicsStruct] = f_PrepMexODE_09192022(ODEinput); % pack variables to send to ODE solver; WITH Thornton-Lessem
+                            % -----------------------------------------------------
+
+                            % step 15b: run the model in C++ ----------------------
+                            fname_ECOTRANode         	= 'mex_ECOTRANode_09182022';
+                            disp(['Running C++ solver using ROMS BGC drivers: ' fname_ECOTRANode])
+                            fname_PhysicalFlux_intraODE	= 'NA';
+                            tic            
+                            [output_Cpp]                = mex_ECOTRANode_09182022(AddressStruct, TrophicStruct, FuncRespStruct, PhysicsStruct); % WITH Thornton-Lessem
+                            time_ODE                    = toc
+                            % ---------------------------------------------
+                        
+                        % end (case 'ExternalDriver_ForcedInput') ---------
+                        
+                    end % end (nested nested switch switch_ExternalDriver) 
+                    
+
+                    % step 15c: unstack result (store_ProductionRates) to retrieve spatial boxes
+                    store_T                     = output_Cpp.mat_obs_times; % (d); (vertical vector: num_t X 1)
+                    store_ProductionRates       = output_Cpp.mat_obs_states; % (mmole N/m3/d); (2D matrix: num_t X (num_grps*num_boxes))
+                    re_Y                        = reshape(store_ProductionRates, [num_t, num_grps, num_boxes]); % (mmole N/m3/d); (3D matrix: time X groups X num_boxes)
+                    % -----------------------------------------------------
+                    
+                % end (case '3D_ROMS') --------------
+
+            end % (nested switch switch_PhysicalModel) --------------------
+    
         case 'MatlabSolver' % Matlab solver
-        % NOTE: calculation uses ode23t (trial-and-error suggests a bit better performance than ODE45)
-        % NOTE: size of ProductionRates is 2D matrix: time X (num_grps*num_boxes)
+            % NOTE: calculation uses ode23t (trial-and-error suggests a bit better performance than ODE45)
+            % NOTE: size of ProductionRates is 2D matrix: time X (num_grps*num_boxes)
             
-            if ShowOutput
-                disp('NOTE: using MATLAB ODE solver')
-            end
-            
-            % step 16a: solve the ODE ---------------------------------------------
-            fname_ECOTRANode                = 'f_ECOTRANode_2D_08202022';         	% name of the MATLAB ODE solver
-            fname_PhysicalFlux_intraODE     = 'f_PhysicalFlux_intraODE_09092019';	% name of the MATLAB ODE solver sub-function
-            
-            if ShowOutput
-                disp(['Running MATLAB solver: ' fname_ECOTRANode])
-            end
-            
-            tic
-            [T, ProductionRates] = ode23t(@(t, ProductionRates_t) f_ECOTRANode_2D_08202022(t, ProductionRates_t, ODEinput), t_grid, production_initial(:)); % run MATLAB ODE solver; use this for getting soln at each time-point has corrected pb & qb usage; has transfer of bnthNH4 from surface to subsurface boxes (use for 2D only)
-            time_ODE = toc
-            
-            store_T                                             = T;
-            store_ProductionRates(:, 1:(num_grps*num_boxes))	= ProductionRates; % (mmole N/m3/d)
-            % -------------------------------------------------------------
-            
-            % step 16b: unstack result to recover variable structure of spatial boxes
-            re_Y                        = reshape(store_ProductionRates, [num_t, num_grps, num_boxes]); % (mmole N/m3/d); (3D matrix: time X groups X num_boxes)
-            % -------------------------------------------------------------
+            disp('NOTE: using MATLAB ODE solver')
 
-        % end (case 'MatlabSolver') ---------------------------------------
-        
-    end % (switch switch_ODEsolver) ---------------------------------------
+            switch switch_PhysicalModel
+                case '2D_upwelling'
+            
+                    % step 15a: solve the ODE -----------------------------
+                    fname_ECOTRANode                = 'f_ECOTRANode_2D_09072022';         	% name of the MATLAB ODE solver
+                    fname_PhysicalFlux_intraODE     = 'f_PhysicalFlux_intraODE_09092019';	% name of the MATLAB ODE solver sub-function
+
+                    disp(['Running MATLAB solver (* 2D shelf physics): ' fname_ECOTRANode])
+                    tic
+                    [T, ProductionRates] = ode23t(@(t, ProductionRates_t) f_ECOTRANode_2D_09072022(t, ProductionRates_t, ODEinput), t_grid, production_initial(:)); % run MATLAB ODE solver; use this for getting soln at each time-point has corrected pb & qb usage; has transfer of bnthNH4 from surface to subsurface boxes (use for 2D only)
+                    time_ODE = toc
+                    store_T                                             = T;
+                    store_ProductionRates(:, 1:(num_grps*num_boxes))	= ProductionRates; % (mmole N/m3/d)
+                    % -----------------------------------------------------
+            
+                    % step 15b: unstack result to recover variable structure of spatial boxes
+                    re_Y    = reshape(store_ProductionRates, [num_t, num_grps, num_boxes]); % (mmole N/m3/d); (3D matrix: time X groups X num_boxes)
+                    % -----------------------------------------------------
+                    
+                % end (case '2D_upwelling') --------------
+            
+                case '3D_ROMS'
+
+                    % step 15a: solve the ODE -----------------------------
+                    fname_ECOTRANode                = 'f_ECOTRANode_09192022';              % name of the MATLAB ODE solver
+                    fname_PhysicalFlux_intraODE     = 'f_PhysicalFlux_intraODE_09092019';   % name of the MATLAB ODE solver sub-function
+
+                    disp(['Running MATLAB solver: ' fname_ECOTRANode])
+                    tic
+                    [T, ProductionRates] = ode23t(@(t, ProductionRates_t) f_ECOTRANode_09192022(t, ProductionRates_t, ODEinput), t_grid, production_initial(:)); % run MATLAB ODE solver; use this for getting soln at each time-point; NOTE: uses Thornton-Lessem scaler
+                    time_ODE = toc
+                    store_T                                             = T;
+                    store_ProductionRates(:, 1:(num_grps*num_boxes))	= ProductionRates; % (mmole N/m3/d)
+                    % -----------------------------------------------------
+                    
+                    % step 15b: unstack result to recover variable structure of spatial boxes
+                    re_Y    = reshape(store_ProductionRates, [num_t, num_grps, num_boxes]); % (mmole N/m3/d); (3D matrix: time X groups X num_boxes)
+                    % -----------------------------------------------------
+                    
+                % end (case '3D_ROMS') --------------
+                
+            end % (nested switch switch_PhysicalModel) --------------------
+
+    end % (switch_ODEsolver) ----------------------------------------------
     % *********************************************************************
     
-    
-    
-    
-    
+
     %% *********************************************************************
     % STEP 17: save run results--------------------------------------------
     % step 17a: RUNlog of called functions --------------------------------

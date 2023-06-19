@@ -1,4 +1,10 @@
 function [production_initial, FunctionName] = f_InitialProductionRates_02012022(ODEinput, production_driver, t_current, ShowOutput)
+% dwj change
+if nargin < 4
+    ShowOutput = 0;
+end
+% end dwj change
+
 % calculate initial or mean production conditions
 % by Jim Ruzicka
 %

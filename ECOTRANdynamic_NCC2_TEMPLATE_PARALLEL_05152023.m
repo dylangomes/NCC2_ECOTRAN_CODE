@@ -21,8 +21,8 @@ num_MC              = 1;     % SSS set this value to number of Monte Carlo model
 FileOffset          = 0;       % set this if adding to other files. e.g., if already ran 10 files of this type, and want the MC number to start from 11, set this to 10.
 current_MC_offset   = 0; 
 
-START               = '01-Jan-2000' % choose time start
-END                 = '01-Jan-2001'  % choose time end; test with a smaller timeseries before full run
+START               = '01-Jan-2005'; % choose time start
+END                 = '31-Dec-2005';  % choose time end; test with a smaller timeseries before full run
 % END                 = '01-Jan-2075'  % choose time end
 
 Region              = 'NA'; % Can choose a specific region to model (instead of the fully aggregated model): 'CR' = Columbia River, 'WA' = Washington coast, 'NOR' = Northern Oregon, 'SOR'=Southern Oregon, 'NCA'= Northern California

@@ -93,9 +93,6 @@ current_benthicDetritusPredation        = 1 - (current_benthicDetritusMetabolism
 % *************************************************************************
 
 
-
-
-
 % *************************************************************************
 % STEP 1: load & aggregate EwE results-------------------------------------
 % step 1a: set operating conditions ---------------------------------------
@@ -1255,6 +1252,7 @@ for MonteCarlo_loop = 1:num_MC
         display(['MonteCarlo run ' num2str(MonteCarlo_loop) ' of ' num2str(num_MC)])
     end
     saveFile                        = strcat(SaveFile_directory, 'Output/temp/', SaveFile_label, '_', num2str(MonteCarlo_loop+FileOffset+current_MC_Offset, '%04d'), '_', date, '.mat');
+    disp(strjoin(["Saving output to" saveFile]));
 
     % pick the current MonteCarlo food web --------------------------------
     current_biomass                	= biomass(:, 1);	% (t WWT/km2); NOTE: these are INITIAL biomass conditions; (vertical vector: num_grps X 1); NOTE: nutrients are zeros
@@ -1696,16 +1694,6 @@ for MonteCarlo_loop = 1:num_MC
             looky_NaN = find(isnan(production_initial));
             production_initial(looky_NaN) = 0;
             % QQQ -----
-
-            % CCC 1/18/2023 Change initial conditions for those species
-            % going extinct in base model
-            production_initial(102, :)                 = production_initial(102, :) * 0.25;
-            % dwj change
-            "Commenting out Jim's initial condition adjustments for now."
-            %production_initial([49, 50, 53, 104], :)   = production_initial([49, 50, 53 ,104],:) * 0.5;
-            % end dwj change
-            % QQQ -----
-            % QQQ -->> This issue may be due to applying T-L scaling to non-fish groups??
 
             % end (case 'INITIALproduction_BioGeoChemicalModel') --------------
 

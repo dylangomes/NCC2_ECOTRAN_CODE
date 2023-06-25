@@ -1,7 +1,9 @@
 function filePath = f_GetFilePath(key)
 
-    codePath = "/Users/djackson/Documents/QEDA/NWFSC/ECOTRAN/programs/NCC2_ECOTRAN_CODE";
-    projectPath = "/Users/djackson/Documents/QEDA/NWFSC/ECOTRAN/ECOTRANprojects/09jun23";
+%     codePath = "/Users/djackson/Documents/QEDA/NWFSC/ECOTRAN/programs/NCC2_ECOTRAN_CODE";
+%     projectPath = "/Users/djackson/Documents/QEDA/NWFSC/ECOTRAN/ECOTRANprojects/09jun23";
+    codePath = "/Users/dgome/Documents/NCC2_ECOTRAN_CODE";
+    projectPath = codePath;
 
     filePaths = containers.Map();
     filePaths("codePath") = codePath;

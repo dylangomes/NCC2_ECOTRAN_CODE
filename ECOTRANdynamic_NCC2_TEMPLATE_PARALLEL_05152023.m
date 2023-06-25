@@ -53,6 +53,19 @@ switch_MonteCarlo           = 'MonteCarlo_build';	% generate (and optionally sav
 % switch_MonteCarlo           = 'MonteCarlo_load';	% load a saved stack of MonteCarlo food webs
 % switch_MonteCarlo           = 'MonteCarlo_TypeModel';	% use NO MonteCarlo food webs
 
+switch_ODEsolver            = 'CppSolver';                          % OPTION 1: C++
+% switch_ODEsolver            = 'MatlabSolver';                       % OPTION 2: Matlab
+
+% switch_FunctionalResponse	= 'Linear';             % linear functional response; NOTE: STRICTLY DONER-DRIVEN DYNAMICS (rate of consumption by each consumer is a direct proportion of the production by each of its prey groups)
+switch_FunctionalResponse	= 'NonLinear_default';	% NonLinear_default functional response
+% switch_FunctionalResponse	= 'NonLinear_alt';      % NonLinear_default functional response
+
+% switch_PhysicalModel        = '2D_upwelling';
+switch_PhysicalModel        = '3D_ROMS';
+
+% switch_ExternalDriver       = 'ExternalDriver_BoundaryConcentration';	% OPTION 1: use for 2D or 3D model driven by advection & mixing of boundary concentrations of driver(s) into model domain
+switch_ExternalDriver       = 'ExternalDriver_ForcedInput';             % OPTION 2: use for 3D ROMS setting when driving with BioGeoChemical model output
+
 
 %% END MODEL SETUP AND SWITCHES (no editing required below)
 
@@ -92,7 +105,7 @@ if num_Treatment_1 >= num_Treatment_2
 
             f_ECOTRANdynamic_NCC2_PARALLEL_05152023(setWD, Model_name, START, END, Region, upwelling_driver, ...
                                                     CUTI_LAT, CUTI_YEARS, run_Treatments, switch_FoodWebScenario, ...
-                                                    switch_SubModel, switch_INITIALproduction, switch_MonteCarlo, ...
+                                                    switch_SubModel, switch_INITIALproduction, switch_MonteCarlo, switch_PhysicalModel, switch_ExternalDriver,switch_ODEsolver, switch_FunctionalResponse,...
                                                     num_MC, FileOffset, current_MC_offset, ShowOutput);
 
         end % (Treatment_2_loop)
@@ -109,7 +122,7 @@ else % this else statement parallelizes the other loop, if the Treatment_2 vecto
 
             f_ECOTRANdynamic_NCC2_PARALLEL_05152023(setWD, Model_name, START, END, Region, upwelling_driver, ...
                                                     CUTI_LAT, CUTI_YEARS, run_Treatments, switch_FoodWebScenario, ...
-                                                    switch_SubModel, switch_INITIALproduction, switch_MonteCarlo, ...
+                                                    switch_SubModel, switch_INITIALproduction, switch_MonteCarlo, switch_PhysicalModel, switch_ExternalDriver,switch_ODEsolver, switch_FunctionalResponse,...
                                                     num_MC, FileOffset, current_MC_offset, ShowOutput);
 
         end % (Treatment_2_loop)

@@ -99,27 +99,6 @@ current_benthicDetritusPredation        = 1 - (current_benthicDetritusMetabolism
 % step 1a: set operating conditions ---------------------------------------
 fname_ECOTRANdynamic        = mfilename; % save name of this m-file to keep in saved model results
 
-
-% % % set these switches in ECOTRAN_DynamicCode_NCC2_PARALLEL_05152023 script:
-% % switch_MonteCarlo           = 'MonteCarlo_build';               % generate (and optionally save) a stack of MonteCarlo food webs
-% % switch_MonteCarlo           = 'MonteCarlo_load';                % load a saved stack of MonteCarlo food webs
-% % switch_MonteCarlo           = 'MonteCarlo_TypeModel';           % use NO MonteCarlo food webs
-% %
-% % switch_FoodWebScenario      = 'FoodWebScenario_ON';             % force changes to food web before dynamic run
-% % switch_FoodWebScenario      = 'FoodWebScenario_OFF';            % apply NO changes to food web before dynamic run
-% %
-% % switch_SubModel             = 'identical_SubModel';             % OPTION 1: use the same food web across the shelf
-% % switch_SubModel             = 'independent_SubModel';           % OPTION 2: use independently defined webs for each shelf zone
-% %
-
-% % switch_INITIALproduction	= 'INITIALproduction_pb';           % METHOD 1: use for driving initial model conditions with primary production defined by p = [(p/b) * b]
-% % switch_INITIALproduction	= 'INITIALproduction_SubModel';     % METHOD 2: use for driving initial model conditions with values loaded along with regional sub-model definitions
-% % switch_INITIALproduction	= 'INITIALproduction_nutrients';	% METHOD 3: use for driving initial model conditions with mean annual nutrient input rates
-%switch_INITIALproduction	= 'INITIALproduction_BioGeoChemicalModel';	% METHOD 5: use for driving initial model conditions with mean annual ROMS-BioGeoChemichal Primary Production rates
-
-% -------------------------------------------------------------------------
-
-
 % step 1b: define food web model to use -----------------------------------
 ReadFile_directory      = setWD;  % SSS assign desired directory
 

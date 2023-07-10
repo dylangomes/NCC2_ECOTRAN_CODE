@@ -1,0 +1,84 @@
+Name,QB,Biomass
+MZ: micro-zooplankton,428.5714417,16.21716118
+Z1ai: copepods (large >= 0.025mg C),60,6.551650047
+Z1aii: copepods (small < 0.025mg C),148,26.44322205
+Z1b: small invertebrate larvae,148,4.812924862
+Z1d: pteropods,49.99999619,0.271578103
+Z2a: pelagic amphipods,56,0.661687136
+Z2b: pelagic shrimp (Sergestidae Panaeidae),12,18.93883896
+Z2c: other macro-zooplankton,40,6.309049129
+Z2g: small jellyfish (net-feeders),150,1.670718193
+Z2e: small jellyfish (carnivores),66.66666412,0.05359574
+Z2f: large jellyfish,60,0.101310447
+Z2g: pyrosomes,150,15.97611523
+Z3a: E. pacifica (adult & juveniles),24,32.29380417
+Z3b: T. spinifera (adult & juveniles),28,10.23448086
+Ca: small cephalopod aggregate,12,2.640287638
+Cb: cephalopod humboldt,11,0.005
+PlnkF1a: smelt aggregate,7.199999809,7.3832798
+PlnkF1b: shad,4.533333302,2.081059694
+PlnkF1c: sardine,4.533333302,1.841389537
+PlnkF1d: herring,7.199999809,4.099181175
+PlnkF1e: anchovy,7.199999809,3.03769207
+PlnkF1f: saury,4.533333302,0.129943997
+PlnkF2a: coho yearling,7.199999809,0.222038403
+PlnkF2bi: Chinook yearling Sp,4.533333302,0.109936945
+PlnkF2bii: Chinook yearling Fa,4.533333302,0.079832993
+PlnkF2biii: Chinook subyearling Fa early,7.199999809,0.01511823
+PlnkF2biv: Chinook subyearling Fa late,7.199999809,0.094461218
+PlnkF2bv: other Chinook yearling,4.533333302,0.013954661
+PlnkF2bvi: other Chinook subyearling,7.199999809,0.057174202
+PlnkF2c: other juvenile salmon,7.199999809,0.028441601
+PlnkF3: mesopelagic fish aggregate,7,1.245406866
+PlnkF4: planktivorous rockfish,1.25,6.420203686
+PiscF1a: coho,10.5882349,0.230441257
+PiscF1b: Chinook,4.411764622,0.111657694
+PiscF1c: other salmon aggregate,11.17647076,0.018515328
+PiscF2: shark aggregate,3.333333492,0.016970921
+PiscF3a: jack mackerel,2.299999952,21.39485741
+PiscF3b: Pacific mackerel,7.599999905,0.857144177
+PiscF4: piscivorous rockfish,1.718999982,3.072007656
+PiscF5: dogfish aggregate,2.5,3.4748528
+PiscF6: hake,3.539999962,18.49971962
+PiscF10: tuna aggregate,3,0.200000003
+PiscF7: sablefish,2.299999952,1.787450433
+PiscF8: Hexagrammidae (lingcod greenling),3,0.721755803
+PiscF9: flatfish (water-column feeders),1.375,3.797323704
+BnthF1: skates & rays,2.299999952,2.768843412
+BnthF2: misc. small benthic fishes,4,8.899834633
+BnthF3: benthivorous rockfish,0.699999988,7.986792564
+BnthF4: Gadidae (cod haddock pollock),3.5,0.119843885
+BnthF5: flatfish (benthic feeders),3,11.87807178
+BnthF6: flatfish (small),1.899999976,7.968063354
+BnthF7: grenadier,1,1.20647645
+JuvF1: juvenile rockfish,10.80000019,1.202436686
+JuvF2: juvenile fish (other),10.80000019,5.990899563
+JuvF3: juvenile fish (chondrichthys),10.80000019,0.534902453
+DepB1: infauna,18,80
+DepB2a: Pandalus spp.,12,14.25717068
+DepB2b: other epibenthic shrimp (Caridea),16.79999924,12.8709116
+DepB3: mysids,110,2.62370348
+DepB4: echinoderms,6.050000191,21.11213875
+DepB5: benthic amphipods isopods and cumaceans,107.5,7.09335041
+SspB2: bivalves,6.499999523,63.79973984
+SspB3: misc. epifauna (suspension feeders),37,3.669828892
+CrnB1: Dungeness crab,6,5.109444618
+CrnB2: Tanner crab,4,0.869235694
+CrnB3: misc. epifauna (carnivorous),15,31.1255455
+SB1: sooty shearwaters,73,0.017073199
+SB2: common murre,72,0.0151141
+SB3: gulls & terns,73,0.000939614
+SB4: alcids,110,0.001287814
+SB5: large pelagic seabirds,75,0.001032324
+SB6: other pelagic seabirds,73,0.000982679
+SB7: coastal seabirds (divers),73,0.000730331
+SB8: storm-petrels,144,6.1E-05
+PlnkMM1: gray whales,8.899999619,0.145981923
+PlnkMM2: baleen whales,7.599999905,0.571612
+PiscMM1: small pinnipeds,8.300000191,0.023760159
+PiscMM2a: sea lions,24,0.048928056
+PiscMM2b: N elephant seals,24,0.062393408
+PiscMM3: small toothed whales,25.79999924,0.071590997
+PiscMM4: large toothed whales,6.610000134,0.067212
+PiscMM5a: other killer whales,11.15699959,0.000422112
+PiscMM5b: Southern resident killer whales,11.15699959,0.004620725

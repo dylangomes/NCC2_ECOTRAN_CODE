@@ -1,9 +1,8 @@
 function filePath = f_GetFilePath(key)
 
-%     codePath = "/Users/djackson/Documents/QEDA/NWFSC/ECOTRAN/programs/NCC2_ECOTRAN_CODE";
-%     projectPath = "/Users/djackson/Documents/QEDA/NWFSC/ECOTRAN/ECOTRANprojects/09jun23";
-    codePath = "/Users/dgome/Documents/NCC2_ECOTRAN_CODE";
-    projectPath = codePath;
+    projectPath = "/Users/djackson/Documents/QEDA/NWFSC/ECOTRAN/ECOTRANprojects/ROMS_24jul23";
+    codePath = "/Users/djackson/Documents/QEDA/NWFSC/ECOTRAN/programs/NCC2_ECOTRAN_CODE";
+    ROMSdir = "/Volumes/QEDA_ARCHIVE/QEDA/NWFSC/ECOTRAN/fromJim";
 
     filePaths = containers.Map();
     filePaths("codePath") = codePath;
@@ -14,11 +13,13 @@ function filePath = f_GetFilePath(key)
     filePaths("ERD_CUTI_directory") = fullfile(projectPath, "CUTI", "CUTI_daily.nc");
 
     % ROMS data files
-    filePaths("wc12_gr") = "/Volumes/QEDA_ARCHIVE/QEDA/NWFSC/ECOTRAN/fromJim/wc12_grd.nc";
-    filePaths("depth_levels_trimmed") = "/Volumes/QEDA_ARCHIVE/QEDA/NWFSC/ECOTRAN/fromJim/depth_levels_trimmed.nc";
-    filePaths("ROMSdir") = "/Volumes/QEDA_ARCHIVE/QEDA/NWFSC/ECOTRAN/fromJim";
-    filePaths("wc12_avg_2008_trimmed") = "/Volumes/QEDA_ARCHIVE/QEDA/NWFSC/ECOTRAN/fromJim/wc12_avg_gfdl_2005_trimmed.nc";
+    filePaths("ROMSdir") = ROMSdir;
+    filePaths("wc12_gr") = fullfile(ROMSdir, "wc12_grd.nc");
+    filePaths("depth_levels_trimmed") = fullfile(ROMSdir, "depth_levels_trimmed.nc");
+    filePaths("wc12_avg_2008_trimmed") = fullfile(ROMSdir, "wc12_avg_gfdl_2005_trimmed.nc");
 
+    % Location of pre-processed ROMS data
+    filePaths("preproDir") = fullfile(projectPath, "prepro");
 
     filePath = filePaths(key);
 end

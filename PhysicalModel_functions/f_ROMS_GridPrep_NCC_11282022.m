@@ -24,7 +24,7 @@ readFile_DepthLevels = f_GetFilePath("depth_levels_trimmed");
 readFile_grid = f_GetFilePath("wc12_gr");
 % ncdisp(readFile_grid) % Display contents of NetCDF data source in Command Window
 
-readFile_ExampleYear = f_GetFilePath("wc12_avg_2008_trimmed");
+readFile_ExampleYear = f_GetFilePath("wc12_avg_2005_trimmed");
 % ncdisp(readFile_ExampleYear) % Display contents of NetCDF data source in Command Window
 % -------------------------------------------------------------------------
 
@@ -252,15 +252,15 @@ z_rho     	= netcdf.getVar(ncid, varid); % 'depth of rho points'; (m); (2D matri
 
 varid    	= netcdf.inqVarID(ncid, 'z_w');
 z_w       	= netcdf.getVar(ncid, varid); % 'depth of w points'; (m); (2D matrix: 186 X 181 X 43)
-
-varid     	= netcdf.inqVarID(ncid, 'z_v');
-z_v       	= netcdf.getVar(ncid, varid); % 'depth of v points'; (m); (2D matrix: 186 X 180 X 42)
-
-varid   	= netcdf.inqVarID(ncid, 'z_u');
-z_u        	= netcdf.getVar(ncid, varid); % 'depth of u points'; (m); (2D matrix: 185 X 181 X 42)
-
-varid      	= netcdf.inqVarID(ncid, 'z_psi');
-z_psi     	= netcdf.getVar(ncid, varid); % 'depth of PSI-points'; (m); (2D matrix: 185 X 180 X 42)
+% 
+% varid     	= netcdf.inqVarID(ncid, 'z_v');
+% z_v       	= netcdf.getVar(ncid, varid); % 'depth of v points'; (m); (2D matrix: 186 X 180 X 42)
+% 
+% varid   	= netcdf.inqVarID(ncid, 'z_u');
+% z_u        	= netcdf.getVar(ncid, varid); % 'depth of u points'; (m); (2D matrix: 185 X 181 X 42)
+% 
+% varid      	= netcdf.inqVarID(ncid, 'z_psi');
+% z_psi     	= netcdf.getVar(ncid, varid); % 'depth of PSI-points'; (m); (2D matrix: 185 X 180 X 42)
 
 % Close the NetCDF file
 netcdf.close(ncid)
@@ -374,7 +374,7 @@ if ~isempty(looky_TooNorth)
     x_v(:, looky_TooNorth)          = []; % delete columns north of Arakawa-C longitude domain
     y_v(:, looky_TooNorth)          = []; % delete columns north of Arakawa-C longitude domain
     mask_v(:, looky_TooNorth)       = []; % delete columns north of Arakawa-C longitude domain
-    z_v(:, looky_TooNorth, :)       = []; % delete columns north of Arakawa-C longitude domain
+    % z_v(:, looky_TooNorth, :)       = []; % delete columns north of Arakawa-C longitude domain
 end % (~isempty(looky_TooNorth))
     
 looky_TooSouth = find(lat_v(1, :) < SouthBoundary); % NOTE: assumes latitudes run across columns; 
@@ -384,7 +384,7 @@ if ~isempty(looky_TooSouth)
     x_v(:, looky_TooSouth)          = []; % delete columns south of Arakawa-C longitude domain
     y_v(:, looky_TooSouth)          = []; % delete columns south of Arakawa-C longitude domain
     mask_v(:, looky_TooSouth)       = []; % delete columns south of Arakawa-C longitude domain
-    z_v(:, looky_TooSouth, :)       = []; % delete columns south of Arakawa-C longitude domain
+    % z_v(:, looky_TooSouth, :)       = []; % delete columns south of Arakawa-C longitude domain
 end % (~isempty(looky_TooSouth))
 
 looky_TooWest	= find(lon_v(:, 1) < WestBoundary); % NOTE: assumes longitudes run down rows; 
@@ -394,7 +394,7 @@ if ~isempty(looky_TooWest)
     x_v(looky_TooWest, :)           = []; % delete rows west of Arakawa-C longitude domain
     y_v(looky_TooWest, :)           = []; % delete rows west of Arakawa-C longitude domain
     mask_v(looky_TooWest, :)        = []; % delete rows west of Arakawa-C longitude domain
-    z_v(looky_TooWest, :, :)        = []; % delete rows west of Arakawa-C longitude domain
+    % z_v(looky_TooWest, :, :)        = []; % delete rows west of Arakawa-C longitude domain
 end % (~isempty(looky_TooWest))
 
 looky_TooEast	= find(lon_v(:, 1) > EastBoundary); % NOTE: assumes longitudes run down rows; 
@@ -404,7 +404,7 @@ if ~isempty(looky_TooEast)
     x_v(looky_TooEast, :)           = []; % delete rows east of Arakawa-C longitude domain
     y_v(looky_TooEast, :)           = []; % delete rows east of Arakawa-C longitude domain
     mask_v(looky_TooEast, :)        = []; % delete rows east of Arakawa-C longitude domain
-	z_v(looky_TooEast, :, :)        = []; % delete rows east of Arakawa-C longitude domain
+	% z_v(looky_TooEast, :, :)        = []; % delete rows east of Arakawa-C longitude domain
 end % (~isempty(looky_TooEast))
 % -----
 
@@ -417,7 +417,7 @@ if ~isempty(looky_TooNorth)
     x_u(:, looky_TooNorth)          = []; % delete columns north of Arakawa-C longitude domain
     y_u(:, looky_TooNorth)          = []; % delete columns north of Arakawa-C longitude domain
     mask_u(:, looky_TooNorth)       = []; % delete columns north of Arakawa-C longitude domain
-    z_u(:, looky_TooNorth, :)       = []; % delete columns north of Arakawa-C longitude domain
+    % z_u(:, looky_TooNorth, :)       = []; % delete columns north of Arakawa-C longitude domain
 end % (~isempty(looky_TooNorth))
     
 looky_TooSouth = find(lat_u(1, :) < SouthBoundary); % NOTE: assumes latitudes run across columns; 
@@ -427,7 +427,7 @@ if ~isempty(looky_TooSouth)
     x_u(:, looky_TooSouth)          = []; % delete columns south of Arakawa-C longitude domain
     y_u(:, looky_TooSouth)          = []; % delete columns south of Arakawa-C longitude domain
     mask_u(:, looky_TooSouth)       = []; % delete columns south of Arakawa-C longitude domain
-	z_u(:, looky_TooSouth, :)       = []; % delete columns south of Arakawa-C longitude domain
+	% z_u(:, looky_TooSouth, :)       = []; % delete columns south of Arakawa-C longitude domain
 end % (~isempty(looky_TooSouth))
 
 looky_TooWest	= find(lon_u(:, 1) < WestBoundary); % NOTE: assumes longitudes run down rows; 
@@ -437,7 +437,7 @@ if ~isempty(looky_TooWest)
     x_u(looky_TooWest, :)           = []; % delete rows west of Arakawa-C longitude domain
     y_u(looky_TooWest, :)           = []; % delete rows west of Arakawa-C longitude domain
     mask_u(looky_TooWest, :)        = []; % delete rows west of Arakawa-C longitude domain
-    z_u(looky_TooWest, :, :)        = []; % delete rows west of Arakawa-C longitude domain
+    % z_u(looky_TooWest, :, :)        = []; % delete rows west of Arakawa-C longitude domain
 end % (~isempty(looky_TooWest))
 
 looky_TooEast	= find(lon_u(:, 1) > EastBoundary); % NOTE: assumes longitudes run down rows; 
@@ -447,7 +447,7 @@ if ~isempty(looky_TooEast)
     x_u(looky_TooEast, :)           = []; % delete rows east of Arakawa-C longitude domain
     y_u(looky_TooEast, :)           = []; % delete rows east of Arakawa-C longitude domain
     mask_u(looky_TooEast, :)        = []; % delete rows east of Arakawa-C longitude domain
-	z_u(looky_TooEast, :, :)        = []; % delete rows east of Arakawa-C longitude domain
+	% z_u(looky_TooEast, :, :)        = []; % delete rows east of Arakawa-C longitude domain
 end % (~isempty(looky_TooEast))
 % -----
 
@@ -460,7 +460,7 @@ if ~isempty(looky_TooNorth)
     x_psi(:, looky_TooNorth)     	= []; % delete columns north of Arakawa-C longitude domain
     y_psi(:, looky_TooNorth)     	= []; % delete columns north of Arakawa-C longitude domain
     mask_psi(:, looky_TooNorth)   	= []; % delete columns north of Arakawa-C longitude domain
-    z_psi(:, looky_TooNorth, :)   	= []; % delete columns north of Arakawa-C longitude domain
+    % z_psi(:, looky_TooNorth, :)   	= []; % delete columns north of Arakawa-C longitude domain
 end % (~isempty(looky_TooNorth))
     
 looky_TooSouth = find(lat_psi(1, :) < SouthBoundary); % NOTE: assumes latitudes run across columns; 
@@ -470,7 +470,7 @@ if ~isempty(looky_TooSouth)
     x_psi(:, looky_TooSouth)       	= []; % delete columns south of Arakawa-C longitude domain
     y_psi(:, looky_TooSouth)      	= []; % delete columns south of Arakawa-C longitude domain
     mask_psi(:, looky_TooSouth)    	= []; % delete columns south of Arakawa-C longitude domain
-	z_psi(:, looky_TooSouth, :)   	= []; % delete columns south of Arakawa-C longitude domain
+	% z_psi(:, looky_TooSouth, :)   	= []; % delete columns south of Arakawa-C longitude domain
 end % (~isempty(looky_TooSouth))
 
 looky_TooWest	= find(lon_psi(:, 1) < WestBoundary); % NOTE: assumes longitudes run down rows; 
@@ -480,7 +480,7 @@ if ~isempty(looky_TooWest)
     x_psi(looky_TooWest, :)       	= []; % delete rows west of Arakawa-C longitude domain
     y_psi(looky_TooWest, :)       	= []; % delete rows west of Arakawa-C longitude domain
     mask_psi(looky_TooWest, :)    	= []; % delete rows west of Arakawa-C longitude domain
-	z_psi(looky_TooWest, :, :)    	= []; % delete rows west of Arakawa-C longitude domain
+	% z_psi(looky_TooWest, :, :)    	= []; % delete rows west of Arakawa-C longitude domain
 end % (~isempty(looky_TooWest))
 
 looky_TooEast	= find(lon_psi(:, 1) > EastBoundary); % NOTE: assumes longitudes run down rows; 
@@ -490,7 +490,7 @@ if ~isempty(looky_TooEast)
     x_psi(looky_TooEast, :)       	= []; % delete rows east of Arakawa-C longitude domain
     y_psi(looky_TooEast, :)       	= []; % delete rows east of Arakawa-C longitude domain
     mask_psi(looky_TooEast, :)     	= []; % delete rows east of Arakawa-C longitude domain
-	z_psi(looky_TooEast, :, :)    	= []; % delete rows east of Arakawa-C longitude domain
+	% z_psi(looky_TooEast, :, :)    	= []; % delete rows east of Arakawa-C longitude domain
 end % (~isempty(looky_TooEast))
 % -------------------------------------------------------------------------
 

@@ -16,7 +16,7 @@ function filePath = f_GetFilePath(key)
     filePaths("ROMSdir") = ROMSdir;
     filePaths("wc12_gr") = fullfile(ROMSdir, "wc12_grd.nc");
     filePaths("depth_levels_trimmed") = fullfile(ROMSdir, "depth_levels_trimmed.nc");
-    filePaths("wc12_avg_2008_trimmed") = fullfile(ROMSdir, "wc12_avg_gfdl_2005_trimmed.nc");
+    filePaths("wc12_avg_2005_trimmed") = fullfile(ROMSdir, "wc12_avg_gfdl_2005_trimmed.nc");
 
     % Location of pre-processed ROMS data
     filePaths("preproDir") = fullfile(projectPath, "prepro");

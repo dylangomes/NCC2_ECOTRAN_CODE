@@ -115,8 +115,8 @@ lon_rho   	= netcdf.getVar(ncid, varid);       % 'longitude of RHO-points'; (2D 
 varid       = netcdf.inqVarID(ncid, 'w');
 w           = netcdf.getVar(ncid, varid);       % time-averaged vertical momentum component; (m/s); (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z+1 (43; s_w) X num_days)
 
-varid       = netcdf.inqVarID(ncid, 'omega');
-omega       = netcdf.getVar(ncid, varid);       % time-averaged S-coordinate vertical momentum component; (m/s); NOTE: comments say units are (m3/s), but this won't allow volume balance while (m/s) DOES WORK; (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z+1 (43; s_w) X num_days)
+% varid       = netcdf.inqVarID(ncid, 'omega');
+% omega       = netcdf.getVar(ncid, varid);       % time-averaged S-coordinate vertical momentum component; (m/s); NOTE: comments say units are (m3/s), but this won't allow volume balance while (m/s) DOES WORK; (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z+1 (43; s_w) X num_days)
 
 varid       = netcdf.inqVarID(ncid, 's_rho');
 s_rho       = netcdf.getVar(ncid, varid);       % 'S-coordinate at RHO-points'; (0 to -1; up is towards 0); (vertical vector: num_z (42; s_rho) X 1);
@@ -309,7 +309,7 @@ end
 v       = v     .* repmat(mask_v, [1, 1, num_z, num_t_ROMS]);   % (m/s); (4D matrix: v longitude (51) X v latitude (80) X num_z (42) X num_t_ROMS (366))
 u       = u     .* repmat(mask_u, [1, 1, num_z, num_t_ROMS]);   % (m/s); (4D matrix: u longitude (50) X u latitude (81) X num_z (42) X num_t_ROMS (366))
 w       = w     .* repmat(mask_rho, [1, 1, num_w, num_t_ROMS]); % (m/s); (4D matrix: rho longitude (51) X rho latitude (81) X num_w (43) X num_t_ROMS (366))
-omega	= omega .* repmat(mask_rho, [1, 1, num_w, num_t_ROMS]); % (m/s); (4D matrix: rho longitude (51) X rho latitude (81) X num_w (43) X num_t_ROMS (366))
+% omega	= omega .* repmat(mask_rho, [1, 1, num_w, num_t_ROMS]); % (m/s); (4D matrix: rho longitude (51) X rho latitude (81) X num_w (43) X num_t_ROMS (366))
 zeta	= zeta  .* repmat(mask_rho, [1, 1, num_t_ROMS]);        % (m);   (3D matrix: rho longitude (51) X rho latitude (81) X num_t_ROMS (366))
 
 % biological terms
@@ -352,7 +352,7 @@ flux_EW                 = u(:, 2:(end-1), :, :) .* repmat_area_NS_u;	% E<-->W vo
 % %          NOTE: multiply w across trapezoidal face
 repmat_area_floor_globe	= repmat(area_floor_globe, [1, 1, 1, num_t_ROMS]); % horizontal cell face area; (m2); (4D matrix: psi longitude-1 (49) X psi latitude-1 (79), num_w (43) X num_t_ROMS (366));
 % flux_UpDown             = w(2:(end-1), 2:(end-1), :, :) .* repmat_area_floor_globe; % Up<-->Down volume flux; (m3/s); (4D matrix: psi longitude-1 (49) X psi latitude-1 (79), num_w (43) X num_t_ROMS (366));
-flux_UpDown             = omega(2:(end-1), 2:(end-1), :, :) .* repmat_area_floor_globe; % Up<-->Down volume flux; (m3/s); (4D matrix: psi longitude-1 (49) X psi latitude-1 (79), num_w (43) X num_t_ROMS (366));
+% flux_UpDown             = omega(2:(end-1), 2:(end-1), :, :) .* repmat_area_floor_globe; % Up<-->Down volume flux; (m3/s); (4D matrix: psi longitude-1 (49) X psi latitude-1 (79), num_w (43) X num_t_ROMS (366));
 % -------------------------------------------------------------------------
 
 
@@ -363,13 +363,13 @@ flux_UpDown             = omega(2:(end-1), 2:(end-1), :, :) .* repmat_area_floor
 %          NOTE: face order matters; 
 net_flux_NS_1           = flux_NS(:, 1:(end-1), :, :)     - flux_NS(:, 2:end, :, :);     % net N<-->S volume flux; (flux through SOUTH face minus flux through NORTH face); (m3/s); (4D matrix: psi longitude-1 (49) X psi latitude-1 (79) X num_z (42) X num_t_ROMS (366))
 net_flux_EW_1           = flux_EW(1:(end-1), :, :, :)     - flux_EW(2:end, :, :, :);     % net E<-->W volume flux; (flux through WEST face minus flux through EAST face); (m3/s); (4D matrix: psi longitude-1 (49) X psi latitude-1 (79) X num_z (42) X num_t_ROMS (366))
-net_flux_UpDown_1       = flux_UpDown(:, :, 1:(end-1), :) - flux_UpDown(:, :, 2:end, :); % net Up<-->Down volume flux; (flux through BOTTOM face minus flux through TOP face); (m3/s); (4D matrix: psi longitude-1 (49) X psi latitude-1 (79) X num_z (42) X num_t_ROMS (366))
+% net_flux_UpDown_1       = flux_UpDown(:, :, 1:(end-1), :) - flux_UpDown(:, :, 2:end, :); % net Up<-->Down volume flux; (flux through BOTTOM face minus flux through TOP face); (m3/s); (4D matrix: psi longitude-1 (49) X psi latitude-1 (79) X num_z (42) X num_t_ROMS (366))
 
 net_flux_horizontal_1	= net_flux_NS_1 + net_flux_EW_1; % net HORIZONTAL volume flux into each ROMS cell; (m3/s); (4D matrix: psi longitude-1 (49) X psi latitude-1 (79) X num_z (42) X num_t_ROMS (366))
 net_flux_horizontal_1	= sum(net_flux_horizontal_1, 3); % net HORIZONTAL volume flux into a column of water; (m3/s); (4D matrix: psi longitude-1 (49) X psi latitude-1 (79) X num_z (42) X num_t_ROMS (366))
             % NOTE: at this point, horizontal conservation is good. Most error is well within 50 m3/s. There are 6 instances greater than 200m3/s. Max error is 525m3/s.
 
-net_flux_1              = net_flux_NS_1 + net_flux_EW_1 + net_flux_UpDown_1; % total net flux; should = 0; (m3/s); (4D matrix: psi longitude-1 (49) X psi latitude-1 (79) X num_z (42) X num_t_ROMS (366))
+% net_flux_1              = net_flux_NS_1 + net_flux_EW_1 + net_flux_UpDown_1; % total net flux; should = 0; (m3/s); (4D matrix: psi longitude-1 (49) X psi latitude-1 (79) X num_z (42) X num_t_ROMS (366))
 % hist(net_flux_1(:), 1000)
             % NOTE: at this point, 3D volume conservation is good. Most error is well within 20 m3/s. There are a few (476 out of 59,505,012) instances greater than 200m3/s. Max error is 506 m3/s.
 % *************************************************************************
@@ -609,16 +609,16 @@ for depth_loop = 1:num_agg_z
     z_w_fracBELOWshallow(z_w_fracBELOWshallow > 1)  = 0;
     z_w_fracABOVEshallow(z_w_fracABOVEshallow > 1)  = 0;
     
-    w_BELOWdeep                         = z_w_fracBELOWdeep(2:(end-1), 2:(end-1), :, :)    .* flux_UpDown(:, :, 1:(end-1), :); % contribution to w from BELOW deep boundary;    (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_z (42) X num_t_ROMS (366)); NOTE: omitting far west, east, south, & north border rho points
-    w_ABOVEdeep                         = z_w_fracABOVEdeep(2:(end-1), 2:(end-1), :, :)    .* flux_UpDown(:, :, 2:end, :);     % contribution to w from ABOVE deep boundary;    (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_z (42) X num_t_ROMS (366)); NOTE: omitting far west, east, south, & north border rho points
-    w_BELOWshallow                      = z_w_fracBELOWshallow(2:(end-1), 2:(end-1), :, :) .* flux_UpDown(:, :, 1:(end-1), :); % contribution to w from BELOW shallow boundary; (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_z (42) X num_t_ROMS (366)); NOTE: omitting far west, east, south, & north border rho points
-    w_ABOVEshallow                      = z_w_fracABOVEshallow(2:(end-1), 2:(end-1), :, :) .* flux_UpDown(:, :, 2:end, :);	   % contribution to w from ABOVE deep boundary;    (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_z (42) X num_t_ROMS (366)); NOTE: omitting far west, east, south, & north border rho points
-    
-    w_deep                              = w_BELOWdeep + w_ABOVEdeep;      	% w across deep boundary;    (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_z (42) X num_t_ROMS)
-    w_shallow                           = w_BELOWshallow + w_ABOVEshallow;	% w across shallow boundary; (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_z (42) X num_t_ROMS)
-    
-    agg_flux_UpDown(:, :, depth_loop, :)        = sum(w_shallow, 3); % vertical flux; ; (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_agg_z+1 (8) X num_t_ROMS (366))
-    agg_flux_UpDown(:, :, (depth_loop+1), :)	= sum(w_deep, 3);    % vertical flux; ; (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_agg_z+1 (8) X num_t_ROMS (366))
+    % w_BELOWdeep                         = z_w_fracBELOWdeep(2:(end-1), 2:(end-1), :, :)    .* flux_UpDown(:, :, 1:(end-1), :); % contribution to w from BELOW deep boundary;    (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_z (42) X num_t_ROMS (366)); NOTE: omitting far west, east, south, & north border rho points
+    % w_ABOVEdeep                         = z_w_fracABOVEdeep(2:(end-1), 2:(end-1), :, :)    .* flux_UpDown(:, :, 2:end, :);     % contribution to w from ABOVE deep boundary;    (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_z (42) X num_t_ROMS (366)); NOTE: omitting far west, east, south, & north border rho points
+    % w_BELOWshallow                      = z_w_fracBELOWshallow(2:(end-1), 2:(end-1), :, :) .* flux_UpDown(:, :, 1:(end-1), :); % contribution to w from BELOW shallow boundary; (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_z (42) X num_t_ROMS (366)); NOTE: omitting far west, east, south, & north border rho points
+    % w_ABOVEshallow                      = z_w_fracABOVEshallow(2:(end-1), 2:(end-1), :, :) .* flux_UpDown(:, :, 2:end, :);	   % contribution to w from ABOVE deep boundary;    (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_z (42) X num_t_ROMS (366)); NOTE: omitting far west, east, south, & north border rho points
+    % 
+    % w_deep                              = w_BELOWdeep + w_ABOVEdeep;      	% w across deep boundary;    (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_z (42) X num_t_ROMS)
+    % w_shallow                           = w_BELOWshallow + w_ABOVEshallow;	% w across shallow boundary; (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_z (42) X num_t_ROMS)
+    % 
+    % agg_flux_UpDown(:, :, depth_loop, :)        = sum(w_shallow, 3); % vertical flux; ; (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_agg_z+1 (8) X num_t_ROMS (366))
+    % agg_flux_UpDown(:, :, (depth_loop+1), :)	= sum(w_deep, 3);    % vertical flux; ; (m3/s); (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_agg_z+1 (8) X num_t_ROMS (366))
                                                                      %   NOTE: agg_flux_UpDown is arranged shallowest layer on top and deepest on bottom (opposite to order of ROMS matrices)
 	% ---------------------------------------------------------------------
 

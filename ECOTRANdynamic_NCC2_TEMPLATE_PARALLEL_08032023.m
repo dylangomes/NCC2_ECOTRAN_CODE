@@ -66,6 +66,8 @@ switch_PhysicalModel        = '3D_ROMS';
 % switch_ExternalDriver       = 'ExternalDriver_BoundaryConcentration';	% OPTION 1: use for 2D or 3D model driven by advection & mixing of boundary concentrations of driver(s) into model domain
 switch_ExternalDriver       = 'ExternalDriver_ForcedInput';             % OPTION 2: use for 3D ROMS setting when driving with BioGeoChemical model output
 
+switch_Scenario             = 'Top-Down'    % use 'Top-Down' for predation (incl. fishery fleets)
+% switch_Scenario             = 'Bottom-Up' % use 'Bottom-Up' for competition and lower-trophic level interactions
 
 %% END MODEL SETUP AND SWITCHES (no editing required below)
 
@@ -103,10 +105,10 @@ if num_Treatment_1 >= num_Treatment_2
             run_Treatments          = [current_Treatment_1, current_Treatment_2]; % choose functional group (Treatment_1) to change by a factor of X (Treament 2); 
             rng('shuffle');
 
-            f_ECOTRANdynamic_NCC2_PARALLEL_05152023(setWD, Model_name, START, END, Region, upwelling_driver, ...
+            f_ECOTRANdynamic_NCC2_PARALLEL_08032023(setWD, Model_name, START, END, Region, upwelling_driver, ...
                                                     CUTI_LAT, CUTI_YEARS, run_Treatments, switch_FoodWebScenario, ...
                                                     switch_SubModel, switch_INITIALproduction, switch_MonteCarlo, switch_PhysicalModel, switch_ExternalDriver,switch_ODEsolver, switch_FunctionalResponse,...
-                                                    num_MC, FileOffset, current_MC_offset, ShowOutput);
+                                                    num_MC, FileOffset, current_MC_offset, ShowOutput,switch_Scenario);
 
         end % (Treatment_2_loop)
     end % (Treatment_1_loop)
@@ -120,10 +122,10 @@ else % this else statement parallelizes the other loop, if the Treatment_2 vecto
             run_Treatments          = [current_Treatment_1, current_Treatment_2]; % choose functional group (Treatment_1) to change by a factor of X (Treament 2); 
             rng('shuffle');
 
-            f_ECOTRANdynamic_NCC2_PARALLEL_05152023(setWD, Model_name, START, END, Region, upwelling_driver, ...
+            f_ECOTRANdynamic_NCC2_PARALLEL_08032023(setWD, Model_name, START, END, Region, upwelling_driver, ...
                                                     CUTI_LAT, CUTI_YEARS, run_Treatments, switch_FoodWebScenario, ...
                                                     switch_SubModel, switch_INITIALproduction, switch_MonteCarlo, switch_PhysicalModel, switch_ExternalDriver,switch_ODEsolver, switch_FunctionalResponse,...
-                                                    num_MC, FileOffset, current_MC_offset, ShowOutput);
+                                                    num_MC, FileOffset, current_MC_offset, ShowOutput,switch_Scenario);
 
         end % (Treatment_2_loop)
     end % (Treatment_1_loop)

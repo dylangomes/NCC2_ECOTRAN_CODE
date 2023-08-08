@@ -1,7 +1,7 @@
 function f_ECOTRANdynamic_NCC2_PARALLEL_05152023(setWD, Model_name, START,END, Region,upwelling_driver, CUTI_LAT, ...
     CUTI_YEARS, run_Treatments, switch_FoodWebScenario, switch_SubModel, ...
-    switch_INITIALproduction, switch_MonteCarlo, switch_PhysicalModel, switch_ExternalDriver, switch_ODEsolver, switch_FunctionalResponse,...
-    num_MC, FileOffset, current_MC_Offset, ShowOutput)
+    switch_INITIALproduction, switch_MonteCarlo, switch_PhysicalModel, switch_ExternalDriver,switch_ODEsolver, switch_FunctionalResponse,...
+    num_MC, FileOffset, current_MC_Offset, ShowOutput,switch_Scenario)
 % a function version of ECOTRANdynamic_NCC2_12082022 for batch runs
 % run a dynamic model over time
 % PARALLEL COMPUTING VERSION
@@ -393,7 +393,13 @@ switch switch_FoodWebScenario
 
         % step 6e: force change(s) to the food web ------------------------
         ScenarioConditions.modify_consumer         	= [CHANGEGROUP];                % row number(s) of consumer group(s) to force-modify
+        
+        switch switch_Scenario
+            case 'Top-Down'
+        ScenarioConditions.ScaleFactor            	= 1;                     	% value > 1 means increase flow to modify_consumer (and reduced flow to offset_consumer); < 1 means decrease flow to modify_consumer;
+            case 'Bottom-Up'
         ScenarioConditions.ScaleFactor            	= SCALE;                     	% value > 1 means increase flow to modify_consumer (and reduced flow to offset_consumer); < 1 means decrease flow to modify_consumer;
+        end
         %                                                                               NOTE: keep ScaleFactor >= 0 (negative value makes no sense)
         ScenarioConditions.offset_consumer       	= [1:num_grps];                 % row number(s) of consumer group(s) to modify as offset to force-modified grp(s)
         %                                                                               NOTE: change in modify_consumer grp(s); can be [] if offset is to be distributed among ALL consumer groups
@@ -879,6 +885,12 @@ ODEinput.MIGRATION_compact              = DVM.MIGRATION_compact;             	% 
 % define default place-holder values
 Q10_scaler              = []; % modifies metabolism time-series in ConsumptionBudget (modifications all done within this script)
 q_TemperatureScaler     = ones(num_t, num_grps, num_boxes); % modify consumption rates (q) within the ODE solver
+
+  switch switch_Scenario
+      case 'Top-Down'
+          q_TemperatureScaler(:, CHANGEGROUP, :) = SCALE;
+  end
+
 % *************************************************************************
 
 

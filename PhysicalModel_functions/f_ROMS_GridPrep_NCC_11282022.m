@@ -17,19 +17,7 @@ function ROMSgrid = f_ROMS_GridPrep_NCC_11282022
 fname_ROMS_GridPrep     = mfilename; % save name of this m-file to keep in saved model results
 display(['Running: ' fname_ROMS_GridPrep])
 
-% step 1a: define ROMS NetCDF files to read -------------------------------
-readFile_DepthLevels = f_GetFilePath("depth_levels_trimmed");
-% ncdisp(readFile_DepthLevels) % Display contents of NetCDF data source in Command Window
-
-readFile_grid = f_GetFilePath("wc12_gr");
-% ncdisp(readFile_grid) % Display contents of NetCDF data source in Command Window
-
-readFile_ExampleYear = f_GetFilePath("wc12_avg_2005_trimmed");
-% ncdisp(readFile_ExampleYear) % Display contents of NetCDF data source in Command Window
-% -------------------------------------------------------------------------
-
-
-% step 1b: define ECOTRAN grid --------------------------------------------
+% define ECOTRAN grid --------------------------------------------
 %          Boundaries: North    = 48 (47.8)
 %                      South    = 40 (40.2)
 %                      interval = 0.1
@@ -109,7 +97,6 @@ z_definition =	[
 %                     -5000 % <<--just a catch-all for really deep areas (that probably aren't in the geographic domain)
                     
                 ]; % (m)
-            
             
 z_definition = sort(unique([0; z_definition]), 'descend'); % make sure depth zones start at 0 and are put into descending order  
 
@@ -977,9 +964,6 @@ clear temp_diag
 % *************************************************************************
 % STEP 7: pack up results-------------------------------------------------
 ROMSgrid.fname_ROMS_GridPrep            = fname_ROMS_GridPrep;
-ROMSgrid.readFile_grid                  = readFile_grid;
-ROMSgrid.readFile_DepthLevels           = readFile_DepthLevels;
-ROMSgrid.readFile_ExampleYear           = readFile_ExampleYear;
 
 ROMSgrid.z_definition                   = z_definition;
 ROMSgrid.domain_definition              = domain_definition;

@@ -21,5 +21,10 @@ function filePath = f_GetFilePath(key)
     % Location of pre-processed ROMS data
     filePaths("preproDir") = fullfile(projectPath, "prepro");
 
-    filePath = filePaths(key);
+    if isKey(filePaths, key)
+        filePath = filePaths(key);
+    else
+        filePath = [];
+    end
+
 end

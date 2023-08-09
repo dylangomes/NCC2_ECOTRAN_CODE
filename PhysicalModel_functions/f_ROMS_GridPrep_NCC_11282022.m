@@ -118,177 +118,53 @@ num_agg_z           = length(z_definition) - 1; % number of ECOTRAN depth domain
 num_boxes           = num_domains * num_agg_z;
 % *************************************************************************
 
-
-
-
-
 % *************************************************************************
 % STEP 2: load ROMS variables from NetCDF files----------------------------
 % step 2a: load ROMS grid variables ---------------------------------------
-ncid        = netcdf.open(readFile_grid, 'NC_NOWRITE'); % Open readFile
-
-% domain-wide terms
-% varid       = netcdf.inqVarID(ncid, 'xl'); % Get variable ID of the first variable, given its name
-% xl          = netcdf.getVar(ncid, varid); % 'domain length in the XI-direction'; (m); (scalar)
-
-% varid       = netcdf.inqVarID(ncid, 'el');
-% el          = netcdf.getVar(ncid, varid); % 'domain length in the ETA-direction'; (m); (scalar)
-
-% varid       = netcdf.inqVarID(ncid, 'depthmin');
-% depthmin 	= netcdf.getVar(ncid, varid); % 'Shallow bathymetry clipping depth'; (m); (scalar)
-
-% varid       = netcdf.inqVarID(ncid, 'depthmax');
-% depthmax 	= netcdf.getVar(ncid, varid); % 'Deep bathymetry clipping depth'; (m); (scalar)
-
-% varid       = netcdf.inqVarID(ncid, 'spherical');
-% spherical 	= netcdf.getVar(ncid, varid); % 'Grid type logical switch'; (scalar)
-
 
 % values at rho-points (cell centers) (2D matrix: 186 X 181)
-% varid       = netcdf.inqVarID(ncid, 'angle');
-% angle       = netcdf.getVar(ncid, varid); % 'angle between xi axis and east'; (degree); (2D matrix: 186 X 181)
-
-% varid       = netcdf.inqVarID(ncid, 'hraw');
-% h_raw       = netcdf.getVar(ncid, varid); % 'Working bathymetry at RHO-points'; (m); (2D matrix: 186 X 181)
-
-% varid       = netcdf.inqVarID(ncid, 'alpha');
-% alpha       = netcdf.getVar(ncid, varid); % 'Weights between coarse and fine grids at RHO-points'; (no units); (2D matrix: 186 X 181)
-
-% varid       = netcdf.inqVarID(ncid, 'f');
-% Coriolis    = netcdf.getVar(ncid, varid); % 'Coriolis parameter at RHO-points'; (1/s); (2D matrix: 186 X 181)
-
-% varid       = netcdf.inqVarID(ncid, 'pm');
-% pm          = netcdf.getVar(ncid, varid); % 'curvilinear coordinate metric in XI'; (1/m); (2D matrix: 186 X 181)
-
-% varid       = netcdf.inqVarID(ncid, 'pn');
-% pn          = netcdf.getVar(ncid, varid); % 'curvilinear coordinate metric in eta'; (1/m); (2D matrix: 186 X 181)
-
-% varid       = netcdf.inqVarID(ncid, 'dndx');
-% dndx       	= netcdf.getVar(ncid, varid); % 'xi derivative of inverse metric factor pn'; (m); (2D matrix: 186 X 181)
-
-% varid       = netcdf.inqVarID(ncid, 'dmde');
-% dmde       	= netcdf.getVar(ncid, varid); % 'eta derivative of inverse metric factor pm'; (m); (2D matrix: 186 X 181)
-
-varid       = netcdf.inqVarID(ncid, 'lat_rho');
-lat_rho     = netcdf.getVar(ncid, varid); % 'latitude of RHO-points'; (degrees east); (2D matrix: 186 X 181)
-
-varid       = netcdf.inqVarID(ncid, 'lon_rho');
-lon_rho     = netcdf.getVar(ncid, varid); % 'longitude of RHO-points'; (degrees east); (2D matrix: 186 X 181)
-
-varid       = netcdf.inqVarID(ncid, 'x_rho');
-x_rho       = netcdf.getVar(ncid, varid); % 'x location of RHO-points'; (m); (2D matrix: 186 X 181)
-
-varid       = netcdf.inqVarID(ncid, 'y_rho');
-y_rho       = netcdf.getVar(ncid, varid); % 'y location of RHO-points'; (m); (2D matrix: 186 X 181)
-
-varid       = netcdf.inqVarID(ncid, 'mask_rho');
-mask_rho     = netcdf.getVar(ncid, varid); % 'mask on RHO-points'; (degrees east); (2D matrix: 186 X 181)
-
-varid       = netcdf.inqVarID(ncid, 'h');
-h           = netcdf.getVar(ncid, varid); % 'Final bathymetry at RHO-points'; (m); (2D matrix: 186 X 181)
-
+lat_rho = f_ReadROMSvar("lat_rho"); % 'latitude of RHO-points'; (degrees east); (2D matrix: 186 X 181)
+lon_rho = f_ReadROMSvar("lon_rho"); % 'longitude of RHO-points'; (degrees east); (2D matrix: 186 X 181)
+x_rho = f_ReadROMSvar("x_rho"); % 'x location of RHO-points'; (m); (2D matrix: 186 X 181)
+y_rho = f_ReadROMSvar("y_rho"); % 'y location of RHO-points'; (m); (2D matrix: 186 X 181)
+mask_rho = f_ReadROMSvar("mask_rho"); % 'mask on RHO-points'; (degrees east); (2D matrix: 186 X 181)
+h = f_ReadROMSvar("h"); % 'Final bathymetry at RHO-points'; (m); (2D matrix: 186 X 181)
 
 % values at v-points (cell N/S boundaries) (2D matrix: 186 X 180)
-varid       = netcdf.inqVarID(ncid, 'lat_v');
-lat_v     	= netcdf.getVar(ncid, varid); % 'latitude of V-points'; (degrees east); (2D matrix: 186 X 180)
-
-varid       = netcdf.inqVarID(ncid, 'lon_v');
-lon_v     	= netcdf.getVar(ncid, varid); % 'longitude of V-points'; (degrees east); (2D matrix: 186 X 180)
-
-varid       = netcdf.inqVarID(ncid, 'x_v');
-x_v         = netcdf.getVar(ncid, varid); % 'x location of V-points'; (m); (2D matrix: 186 X 180)
-
-varid       = netcdf.inqVarID(ncid, 'y_v');
-y_v         = netcdf.getVar(ncid, varid); % 'y location of V-points'; (m); (2D matrix: 186 X 180)
-
-varid       = netcdf.inqVarID(ncid, 'mask_v');
-mask_v     	= netcdf.getVar(ncid, varid); % 'mask on V-points'; (degrees east); (2D matrix: 186 X 180)
-
+lat_v = f_ReadROMSvar("lat_v"); % 'latitude of V-points'; (degrees east); (2D matrix: 186 X 180)
+lon_v = f_ReadROMSvar("lon_v"); % 'longitude of V-points'; (degrees east); (2D matrix: 186 X 180)
+x_v = f_ReadROMSvar("x_v"); % 'x location of V-points'; (m); (2D matrix: 186 X 180)
+y_v = f_ReadROMSvar("y_v"); % 'y location of V-points'; (m); (2D matrix: 186 X 180)
+mask_v = f_ReadROMSvar("mask_v"); % 'mask on V-points'; (degrees east); (2D matrix: 186 X 180)
 
 % values at u-points (cell E/W boundaries) (2D matrix: 185 X 181)
-varid       = netcdf.inqVarID(ncid, 'lat_u');
-lat_u     	= netcdf.getVar(ncid, varid); % 'latitude of U-points'; (degrees east); (2D matrix: 185 X 181)
-
-varid       = netcdf.inqVarID(ncid, 'lon_u');
-lon_u     	= netcdf.getVar(ncid, varid); % 'longitude of U-points'; (degrees east); (2D matrix: 185 X 181)
-
-varid       = netcdf.inqVarID(ncid, 'x_u');
-x_u         = netcdf.getVar(ncid, varid); % 'x location of U-points'; (m); (2D matrix: 185 X 181)
-
-varid       = netcdf.inqVarID(ncid, 'y_u');
-y_u         = netcdf.getVar(ncid, varid); % 'y location of U-points'; (m); (2D matrix: 185 X 181)
-
-varid       = netcdf.inqVarID(ncid, 'mask_u');
-mask_u     	= netcdf.getVar(ncid, varid); % 'mask on U-points'; (degrees east); (2D matrix: 185 X 181)
-
+lat_u = f_ReadROMSvar("lat_u"); % 'latitude of U-points'; (degrees east); (2D matrix: 185 X 181)
+lon_u = f_ReadROMSvar("lon_u"); % 'longitude of U-points'; (degrees east); (2D matrix: 185 X 181)
+x_u = f_ReadROMSvar("x_u"); % 'x location of U-points'; (m); (2D matrix: 185 X 181)
+y_u = f_ReadROMSvar("y_u"); % 'y location of U-points'; (m); (2D matrix: 185 X 181)
+mask_u = f_ReadROMSvar("mask_u"); % 'mask on U-points'; (degrees east); (2D matrix: 185 X 181)
 
 % values at psi-points (cell E/W boundaries) (2D matrix: 185 X 180)
-varid       = netcdf.inqVarID(ncid, 'lat_psi');
-lat_psi     = netcdf.getVar(ncid, varid); % 'latitude of PSI-points'; (degrees east); (2D matrix: 185 X 180)
+lat_psi = f_ReadROMSvar("lat_psi"); % 'latitude of PSI-points'; (degrees east); (2D matrix: 185 X 180)
+lon_psi = f_ReadROMSvar("lon_psi"); % 'longitude of PSI-points'; (degrees east); (2D matrix: 185 X 180)
+x_psi = f_ReadROMSvar("x_psi"); % 'x location of PSI-points'; (m); (2D matrix: 185 X 180)
+y_psi = f_ReadROMSvar("y_psi"); % 'y location of PSI-points'; (m); (2D matrix: 185 X 180)
+mask_psi = f_ReadROMSvar("mask_psi"); % 'mask on PSI-points'; (degrees east); (2D matrix: 185 X 180)
 
-varid       = netcdf.inqVarID(ncid, 'lon_psi');
-lon_psi     = netcdf.getVar(ncid, varid); % 'longitude of PSI-points'; (degrees east); (2D matrix: 185 X 180)
-
-varid       = netcdf.inqVarID(ncid, 'x_psi');
-x_psi     	= netcdf.getVar(ncid, varid); % 'x location of PSI-points'; (m); (2D matrix: 185 X 180)
-
-varid       = netcdf.inqVarID(ncid, 'y_psi');
-y_psi     	= netcdf.getVar(ncid, varid); % 'y location of PSI-points'; (m); (2D matrix: 185 X 180)
-
-varid       = netcdf.inqVarID(ncid, 'mask_psi');
-mask_psi	= netcdf.getVar(ncid, varid); % 'mask on PSI-points'; (degrees east); (2D matrix: 185 X 180)
-
-
-% Close the NetCDF file
-netcdf.close(ncid)
 % -------------------------------------------------------------------------
-
 
 % step 2b: open NetCDF depth file and load variables ----------------------
-ncid        = netcdf.open(readFile_DepthLevels, 'NC_NOWRITE'); % Open readFile
-
-varid       = netcdf.inqVarID(ncid, 'z_rho');
-z_rho     	= netcdf.getVar(ncid, varid); % 'depth of rho points'; (m); (2D matrix: 186 X 181 X 42)
-
-varid    	= netcdf.inqVarID(ncid, 'z_w');
-z_w       	= netcdf.getVar(ncid, varid); % 'depth of w points'; (m); (2D matrix: 186 X 181 X 43)
-% 
-% varid     	= netcdf.inqVarID(ncid, 'z_v');
-% z_v       	= netcdf.getVar(ncid, varid); % 'depth of v points'; (m); (2D matrix: 186 X 180 X 42)
-% 
-% varid   	= netcdf.inqVarID(ncid, 'z_u');
-% z_u        	= netcdf.getVar(ncid, varid); % 'depth of u points'; (m); (2D matrix: 185 X 181 X 42)
-% 
-% varid      	= netcdf.inqVarID(ncid, 'z_psi');
-% z_psi     	= netcdf.getVar(ncid, varid); % 'depth of PSI-points'; (m); (2D matrix: 185 X 180 X 42)
-
-% Close the NetCDF file
-netcdf.close(ncid)
+z_rho = f_ReadROMSvar("z_rho"); % 'depth of rho points'; (m); (2D matrix: 186 X 181 X 42)
+z_w = f_ReadROMSvar("z_w"); % 'depth of w points'; (m); (2D matrix: 186 X 181 X 43)
 % -------------------------------------------------------------------------
-
 
 % -------------------------------------------------------------------------
 % step 2c: load ROMS flow variable to get NCC grid extent  ----------------
-ncid        = netcdf.open(readFile_ExampleYear, 'NC_NOWRITE'); % Open readFile
-
 % values at rho-points (cell centers)
-varid           = netcdf.inqVarID(ncid, 'lat_rho'); % Get variable ID of the first variable, given its name
-lat_rho_flow  	= netcdf.getVar(ncid, varid);       % 'latitude of RHO-points'; (2D matrix: rho longitude (51 west:east) X rho latitude (81 south:north))
-varid           = netcdf.inqVarID(ncid, 'lon_rho'); 
-lon_rho_flow	= netcdf.getVar(ncid, varid);       % 'longitude of RHO-points'; (2D matrix: rho longitude (51 west:east) X rho latitude (81 south:north))
-
-% Close the NetCDF file
-netcdf.close(ncid)
+lat_rho_flow = f_ReadROMSvar("lat_rho_flow"); % 'latitude of RHO-points'; (2D matrix: rho longitude (51 west:east) X rho latitude (81 south:north))
+lon_rho_flow = f_ReadROMSvar("lon_rho_flow"); % 'longitude of RHO-points'; (2D matrix: rho longitude (51 west:east) X rho latitude (81 south:north))
 % -------------------------------------------------------------------------
-
-
-% step 2d: clear temporary variables --------------------------------------
-clear ncid varid
 % *************************************************************************
-
-
-
-
 
 % *************************************************************************
 % STEP 3: trim full grid ROMS terms to only those WITHIN the NCC ----------

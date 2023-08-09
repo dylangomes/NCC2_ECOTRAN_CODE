@@ -194,10 +194,6 @@ ROMS_refTime_matlab     = datenum([1900, 1, 1, 0, 0, 0]);
 t_grid_real             = PHYSICSinput.t_grid_real;
 % *************************************************************************
 
-
-
-
-
 % *************************************************************************
 % STEP 2: conversion factors-----------------------------------------------
 atomic_mass_N             = 14.00674;   % (g N / mole N)
@@ -221,13 +217,47 @@ mgram_to_ton              = mgram_to_gram * gram_to_ton; % (mg/t)
 W_to_microE               = 4.6;        % convert (W m^-2) to (microE m^-2 s^-1) at 400-700nm (Brock 1981 Ecol Model 14: 1-19)
 % *************************************************************************
 
-
-
-
-
 % *************************************************************************
 % STEP 3: prepare ROMS grid------------------------------------------------
-ROMSgrid                    = f_ROMS_GridPrep_NCC_11282022;
+[~, names, ~] = fileparts([f_GetFilePath('wc12_gr'), ...
+    f_GetFilePath('depth_levels_trimmed'), f_GetFilePath('wc12_avg_2005_trimmed')]);
+ROMSgridMetadata.gridFile = names(1);
+ROMSgridMetadata.depthFile = names(2);
+ROMSgridMetadata.exampleFile = names(3);
+
+% Create folder to hold pre-processed data files, if necessary
+[~, ~] = mkdir(f_GetFilePath('preproDir'));
+ROMSgridFiles = dir(fullfile(f_GetFilePath('preproDir'), "ROMSgrid*.mat"));
+
+% Load ROMSgrid from existing data file if metadata matches
+foundMatch = false;
+for i = 1:numel(ROMSgridFiles)
+
+    % Skip the current item if it's a directory
+    if ROMSgridFiles(i).isdir
+        continue;
+    end
+
+    thisFile = ROMSgridFiles(i);
+    thisPath = fullfile(thisFile.folder, thisFile.name);
+    thisMetadata = load(thisPath, 'ROMSgridMetadata');
+
+    if isequal(thisMetadata.ROMSgridMetadata, ROMSgridMetadata)
+        fprintf("Loading ROMSgrid from %s\n", thisPath);
+        ROMSgrid = load(thisPath, "ROMSgrid");
+        ROMSgrid = ROMSgrid.ROMSgrid;
+        foundMatch = true;
+    end
+
+end
+
+% Generate ROMSgrid if we haven't found a matching pre-processed data file
+if ~foundMatch
+    disp('Generating ROMSgrid');
+    ROMSgrid = f_ROMS_GridPrep_NCC_11282022;
+    save(fullfile(f_GetFilePath("preproDir"), sprintf('ROMSgrid_%s.mat', string(datetime("now"), 'MM-dd-yyyy_HH-mm'))), "ROMSgridMetadata", "ROMSgrid");
+end
+
 num_boxes                   = ROMSgrid.num_boxes;
 num_domains                 = ROMSgrid.num_domains; % number of geographic domains (does not consider depth layers)
 num_z                       = ROMSgrid.num_agg_z; % number of depth layers
@@ -238,10 +268,6 @@ looky_BottomBoxes           = ROMSgrid.looky_BottomBoxes; % addresses of bottom 
 VerticalConnectivity        = permute(VerticalConnectivity, [3, 2, 1]); % connectivity between source & destiny boxes; 0 or 1; (3D matrix: 1 X SOURCE-->(num_boxes+1) (148) X DESTINY-->(num_boxes+1) (148))
 VerticalConnectivity(1, looky_BottomBoxes, end)	= 1; % sinking from box 1 to benthos; NOTE: not necessary if there is a specifically defined benthic box in the physical model (e.g., GoMexOcn); QQQ need to add benthic box to NCC and remove export sinking out of boundary
 % *************************************************************************
-
-
-
-
 
 % *************************************************************************
 % STEP 4: process ROMS fluxes & biogeochemical model for specified years---
@@ -283,9 +309,41 @@ for year_loop = 1:num_years
     
     readFile_FluxYear	= fullfile(readFile_directory, filename_list{looky_file});
     disp(['Processing year: ' num2str(current_year) ' ROMS file: ' filename_list{looky_file}])
-    
-    ROMSflux            = f_ROMS_FluxPrep_NCC_11302022(ROMSgrid, readFile_FluxYear); % NOTE: this code will provide compacted fluxes for the current ROMS year, but compaction step will be repeated AFTER all ROMS years are stacked
+
+    [~, name, ~] = fileparts(readFile_FluxYear);
+    ROMSfluxMetadata = ROMSgridMetadata;
+    ROMSfluxMetadata.fluxFile = name;
+
+    % Load ROMSflux from existing data file if metadata matches
+    ROMSfluxFiles = dir(fullfile(f_GetFilePath('preproDir'), 'ROMSflux*.mat'));
+    foundMatch = false;
+    for i = 1:numel(ROMSfluxFiles)
+
+        % Skip the current item if it's a directory
+        if ROMSfluxFiles(i).isdir
+            continue;
+        end
+
+        thisFile = ROMSfluxFiles(i);
+        thisPath = fullfile(thisFile.folder, thisFile.name);
+        thisMetadata = load(thisPath, 'ROMSfluxMetadata');
+
+        if isequal(thisMetadata.ROMSfluxMetadata, ROMSfluxMetadata)
+            fprintf("Loading ROMSflux from %s\n", thisPath);
+            ROMSflux = load(thisPath, 'ROMSflux');
+            ROMSflux = ROMSflux.ROMSflux;
+            foundMatch = true;
+        end
         
+    end
+
+    % Generate ROMSflux if we haven't found a matching pre-processed data file
+    if ~foundMatch
+        disp('Generating ROMSflux');
+        ROMSflux = f_ROMS_FluxPrep_NCC_11302022(ROMSgrid, readFile_FluxYear); % NOTE: this code will provide compacted fluxes for the current ROMS year, but compaction step will be repeated AFTER all ROMS years are stacked
+        save(fullfile(f_GetFilePath('preproDir'), sprintf('ROMSflux_%d_%s.mat', current_year, string(datetime('now'), 'MM-dd-yyyy_HH-mm'))), "ROMSfluxMetadata", "ROMSflux");
+    end
+
     current_num_t_ROMS	= ROMSflux.num_t_ROMS; % number of ROMS time-points in current year
     num_t_ROMS          = num_t_ROMS + current_num_t_ROMS;
     pointer_2           = pointer_1 + current_num_t_ROMS - 1;

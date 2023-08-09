@@ -560,43 +560,10 @@ switch switch_PhysicalModel
         PHYSICSinput.t_grid_real     	= linspace(datestart, (dateend+1-dt), ((dateend - datestart + 1)/dt))'; % QQQ NEW VERSION!!!; (vertical vector); t_grid runs from datestart to dateend and is inclusive of dateend; intervals = dt
         % -------------------------------------------------------------------------
 
-        % Create metadata struct used to identify pre-processed ECOTRANphysics data files
-        ECOTRANphysicsMetadata          = PHYSICSinput;
-        ECOTRANphysicsMetadata.num_t    = num_t;
-
-        % Create folder to hold pre-processed data files, if necessary
-        [~, ~]                          = mkdir(f_GetFilePath("preproDir"));
-        ECOTRANphysicsFiles             = dir(fullfile(f_GetFilePath("preproDir"), "ECOTRANphysics*.mat"));
-
         % step 6b: prepare advection & mixing time-series for each model box ------
         % 3D ROMS driver
-        % Load ECOTRANphysics from existing data file if metadata matches
-        foundMatch = false;
-        for i = 1:numel(ECOTRANphysicsFiles)
-
-            % Skip the current item if it's a directory
-            if ECOTRANphysicsFiles(i).isdir
-                continue;
-            end
-
-            thisFile = ECOTRANphysicsFiles(i);
-            thisMetadata = load(fullfile(thisFile.folder, thisFile.name), "ECOTRANphysicsMetadata");
-
-            if isequal(thisMetadata.ECOTRANphysicsMetadata, ECOTRANphysicsMetadata)
-                fprintf("Loading ECOTRANphysics from %s\n", fullfile(thisFile.folder, thisFile.name));
-                ECOTRANphysics = load(fullfile(thisFile.folder, thisFile.name), "ECOTRANphysics");
-                ECOTRANphysics = ECOTRANphysics.ECOTRANphysics;
-                foundMatch = true;
-            end
-
-        end
-
-        % Generate ECOTRANphysics if we haven't found a matching pre-processed data file
-        if ~foundMatch
-            disp("Generating ECOTRANphysics");
-            ECOTRANphysics = f_ECOTRANphysics_NCC_ROMS_12022022(PHYSICSinput); % use for NCC ROMS
-            save(fullfile(f_GetFilePath("preproDir"), sprintf('ECOTRANphysics_%s.mat', string(datetime("now"), 'MM-dd-yyyy_HH-mm'))), "ECOTRANphysicsMetadata", "ECOTRANphysics");
-        end
+        disp("Generating ECOTRANphysics");
+        ECOTRANphysics = f_ECOTRANphysics_NCC_ROMS_12022022(PHYSICSinput); % use for NCC ROMS
 
         % p_plotECOTRANphysics_06242019(ECOTRANphysics)
         % -------------------------------------------------------------------------

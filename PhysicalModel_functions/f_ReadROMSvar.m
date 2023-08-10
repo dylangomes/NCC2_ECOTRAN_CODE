@@ -12,8 +12,28 @@ function val = f_ReadROMSvar(var, fileType)
         error('Paths to ROMS data files are not properly specified in f_GetFilePath');
     end
 
+    % Read from LiveOcean files
+    if strcmp(ROMStype, "LiveOcean")
+        mainFile = f_GetFilePath("LiveOcean");
+        metricsFile = f_GetFilePath("LiveOceanMetrics");
+
+        % Determine which file contains the variable
+        if any(ismember(var, ["x_psi", "y_psi"]))
+            fileType = "metrics";
+        else
+            fileType = "main";
+        end
+
+        % Read variable
+        switch fileType
+            case "main"
+                ncid = netcdf.open(mainFile, 'NC_NOWRITE');
+            case "metrics"
+                ncid = netcdf.open(metricsFile, 'NC_NOWRITE');
+        end
+
     % Read from UCSC data files
-    if strcmp(ROMStype, 'UCSC')
+    elseif strcmp(ROMStype, 'UCSC')
         readFile_DepthLevels = f_GetFilePath("depth_levels_trimmed");
         readFile_grid = f_GetFilePath("wc12_gr");
         readFile_ExampleYear = f_GetFilePath("wc12_avg_2005_trimmed");
@@ -42,11 +62,10 @@ function val = f_ReadROMSvar(var, fileType)
             case "exampleYear"
                 ncid = netcdf.open(readFile_ExampleYear, 'NC_NOWRITE');
         end
-        
-        varid = netcdf.inqVarID(ncid, var);
-        val = netcdf.getVar(ncid, varid);
-        netcdf.close(ncid);
-
     end
+
+    varid = netcdf.inqVarID(ncid, var);
+    val = netcdf.getVar(ncid, varid);
+    netcdf.close(ncid);
 
 end

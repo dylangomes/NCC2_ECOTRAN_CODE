@@ -22,8 +22,9 @@ display(['Running: ' fname_ROMS_GridPrep])
 %                      South    = 40 (40.2)
 %                      interval = 0.1
 
-domain_definition = [
-
+ROMStype = f_GetROMStype();
+if strcmp(ROMStype, "UCSC")
+    domain_definition = [
 % GRID B
         % WA
         47.55 47.15 -15 -150 
@@ -70,9 +71,30 @@ domain_definition = [
 %         45.95	45.55	-75     -200
 %         45.95	45.55	-200	-500
 %         45.95	45.55	-500	-2000
-         
-
                 ]; % [north(lat) south(lat) east(inshore depth) west(offshore depth)]
+elseif strcmp(ROMStype, "LiveOcean")
+    domain_definition = [
+        % WA
+        47.55 47.15 -15 -150 
+        47.55 47.15 -151 -250
+        47.55 47.15 -251 -1500
+
+        % CR
+        47.15 46.05 -15 -150
+        47.15 46.05 -151 -250
+        47.15 46.05 -251 -1500
+
+        % NOR
+        46.05 44.45 -15 -150
+        46.05 44.45 -151 -250
+        46.05 44.45 -251 -1500
+
+        % SOR
+        44.45 42.05 -15 -150
+        44.45 42.05 -151 -250
+        44.45 42.05 -251 -1500
+    ];
+end
                 
 z_definition =	[
     

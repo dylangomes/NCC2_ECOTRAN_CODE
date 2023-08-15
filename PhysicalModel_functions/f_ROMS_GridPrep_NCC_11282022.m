@@ -112,23 +112,23 @@ num_boxes           = num_domains * num_agg_z;
 % values at rho-points (cell centers) (2D matrix: 186 X 181)
 lat_rho = f_ReadROMSvar("lat_rho"); % 'latitude of RHO-points'; (degrees east); (2D matrix: 186 X 181)
 lon_rho = f_ReadROMSvar("lon_rho"); % 'longitude of RHO-points'; (degrees east); (2D matrix: 186 X 181)
-x_rho = f_ReadROMSvar("x_rho"); % 'x location of RHO-points'; (m); (2D matrix: 186 X 181)
-y_rho = f_ReadROMSvar("y_rho"); % 'y location of RHO-points'; (m); (2D matrix: 186 X 181)
+% x_rho = f_ReadROMSvar("x_rho"); % 'x location of RHO-points'; (m); (2D matrix: 186 X 181)
+% y_rho = f_ReadROMSvar("y_rho"); % 'y location of RHO-points'; (m); (2D matrix: 186 X 181)
 mask_rho = f_ReadROMSvar("mask_rho"); % 'mask on RHO-points'; (degrees east); (2D matrix: 186 X 181)
 h = f_ReadROMSvar("h"); % 'Final bathymetry at RHO-points'; (m); (2D matrix: 186 X 181)
 
 % values at v-points (cell N/S boundaries) (2D matrix: 186 X 180)
 lat_v = f_ReadROMSvar("lat_v"); % 'latitude of V-points'; (degrees east); (2D matrix: 186 X 180)
 lon_v = f_ReadROMSvar("lon_v"); % 'longitude of V-points'; (degrees east); (2D matrix: 186 X 180)
-x_v = f_ReadROMSvar("x_v"); % 'x location of V-points'; (m); (2D matrix: 186 X 180)
-y_v = f_ReadROMSvar("y_v"); % 'y location of V-points'; (m); (2D matrix: 186 X 180)
+% x_v = f_ReadROMSvar("x_v"); % 'x location of V-points'; (m); (2D matrix: 186 X 180)
+% y_v = f_ReadROMSvar("y_v"); % 'y location of V-points'; (m); (2D matrix: 186 X 180)
 mask_v = f_ReadROMSvar("mask_v"); % 'mask on V-points'; (degrees east); (2D matrix: 186 X 180)
 
 % values at u-points (cell E/W boundaries) (2D matrix: 185 X 181)
 lat_u = f_ReadROMSvar("lat_u"); % 'latitude of U-points'; (degrees east); (2D matrix: 185 X 181)
 lon_u = f_ReadROMSvar("lon_u"); % 'longitude of U-points'; (degrees east); (2D matrix: 185 X 181)
-x_u = f_ReadROMSvar("x_u"); % 'x location of U-points'; (m); (2D matrix: 185 X 181)
-y_u = f_ReadROMSvar("y_u"); % 'y location of U-points'; (m); (2D matrix: 185 X 181)
+% x_u = f_ReadROMSvar("x_u"); % 'x location of U-points'; (m); (2D matrix: 185 X 181)
+% y_u = f_ReadROMSvar("y_u"); % 'y location of U-points'; (m); (2D matrix: 185 X 181)
 mask_u = f_ReadROMSvar("mask_u"); % 'mask on U-points'; (degrees east); (2D matrix: 185 X 181)
 
 % values at psi-points (cell E/W boundaries) (2D matrix: 185 X 180)
@@ -164,6 +164,8 @@ lat_u    	= round(lat_u, 2);
 lon_u   	= round(lon_u, 2);
 lat_psi     = round(lat_psi, 2);
 lon_psi     = round(lon_psi, 2);
+lat_rho_flow = round(lat_rho_flow, 2);
+lon_rho_flow = round(lon_rho_flow, 2);
 % -------------------------------------------------------------------------
 
 
@@ -183,8 +185,8 @@ looky_TooNorth = find(lat_rho(1, :) > NorthBoundary); % NOTE: assumes latitudes 
 if ~isempty(looky_TooNorth)
     lat_rho(:, looky_TooNorth)      = []; % delete columns north of Arakawa-C longitude domain
     lon_rho(:, looky_TooNorth)      = []; % delete columns north of Arakawa-C longitude domain
-    x_rho(:, looky_TooNorth)        = []; % delete columns north of Arakawa-C longitude domain
-    y_rho(:, looky_TooNorth)        = []; % delete columns north of Arakawa-C longitude domain
+    % x_rho(:, looky_TooNorth)        = []; % delete columns north of Arakawa-C longitude domain
+    % y_rho(:, looky_TooNorth)        = []; % delete columns north of Arakawa-C longitude domain
     mask_rho(:, looky_TooNorth)     = []; % delete columns north of Arakawa-C longitude domain
     h(:, looky_TooNorth)            = []; % delete columns north of Arakawa-C longitude domain
     z_rho(:, looky_TooNorth, :)     = []; % delete columns north of Arakawa-C longitude domain
@@ -195,8 +197,8 @@ looky_TooSouth = find(lat_rho(1, :) < SouthBoundary); % NOTE: assumes latitudes 
 if ~isempty(looky_TooSouth)
     lat_rho(:, looky_TooSouth)      = []; % delete columns south of Arakawa-C longitude domain
     lon_rho(:, looky_TooSouth)      = []; % delete columns south of Arakawa-C longitude domain
-    x_rho(:, looky_TooSouth)        = []; % delete columns south of Arakawa-C longitude domain
-    y_rho(:, looky_TooSouth)        = []; % delete columns south of Arakawa-C longitude domain
+    % x_rho(:, looky_TooSouth)        = []; % delete columns south of Arakawa-C longitude domain
+    % y_rho(:, looky_TooSouth)        = []; % delete columns south of Arakawa-C longitude domain
     mask_rho(:, looky_TooSouth)     = []; % delete columns south of Arakawa-C longitude domain
     h(:, looky_TooSouth)            = []; % delete columns south of Arakawa-C longitude domain
 	z_rho(:, looky_TooSouth, :)     = []; % delete columns south of Arakawa-C longitude domain
@@ -207,8 +209,8 @@ looky_TooWest	= find(lon_rho(:, 1) < WestBoundary); % NOTE: assumes longitudes r
 if ~isempty(looky_TooWest)
 	lat_rho(looky_TooWest, :)       = []; % delete rows west of Arakawa-C longitude domain
     lon_rho(looky_TooWest, :)       = []; % delete rows west of Arakawa-C longitude domain
-    x_rho(looky_TooWest, :)         = []; % delete rows west of Arakawa-C longitude domain
-    y_rho(looky_TooWest, :)         = []; % delete rows west of Arakawa-C longitude domain
+    % x_rho(looky_TooWest, :)         = []; % delete rows west of Arakawa-C longitude domain
+    % y_rho(looky_TooWest, :)         = []; % delete rows west of Arakawa-C longitude domain
     mask_rho(looky_TooWest, :)      = []; % delete rows west of Arakawa-C longitude domain
     h(looky_TooWest, :)            	= []; % delete rows west of Arakawa-C longitude domain
 	z_rho(looky_TooWest, :, :)      = []; % delete rows west of Arakawa-C longitude domain
@@ -219,8 +221,8 @@ looky_TooEast	= find(lon_rho(:, 1) > EastBoundary); % NOTE: assumes longitudes r
 if ~isempty(looky_TooEast)
     lat_rho(looky_TooEast, :)       = []; % delete rows east of Arakawa-C longitude domain
     lon_rho(looky_TooEast, :)       = []; % delete rows east of Arakawa-C longitude domain
-    x_rho(looky_TooEast, :)         = []; % delete rows east of Arakawa-C longitude domain
-    y_rho(looky_TooEast, :)         = []; % delete rows east of Arakawa-C longitude domain
+    % x_rho(looky_TooEast, :)         = []; % delete rows east of Arakawa-C longitude domain
+    % y_rho(looky_TooEast, :)         = []; % delete rows east of Arakawa-C longitude domain
     mask_rho(looky_TooEast, :)      = []; % delete rows east of Arakawa-C longitude domain
     h(looky_TooEast, :)             = []; % delete rows east of Arakawa-C longitude domain
 	z_rho(looky_TooEast, :, :)      = []; % delete rows east of Arakawa-C longitude domain
@@ -234,8 +236,8 @@ looky_TooNorth = find(lat_v(1, :) > NorthBoundary); % NOTE: assumes latitudes ru
 if ~isempty(looky_TooNorth)
     lat_v(:, looky_TooNorth)        = []; % delete columns north of Arakawa-C longitude domain
     lon_v(:, looky_TooNorth)        = []; % delete columns north of Arakawa-C longitude domain
-    x_v(:, looky_TooNorth)          = []; % delete columns north of Arakawa-C longitude domain
-    y_v(:, looky_TooNorth)          = []; % delete columns north of Arakawa-C longitude domain
+    % x_v(:, looky_TooNorth)          = []; % delete columns north of Arakawa-C longitude domain
+    % y_v(:, looky_TooNorth)          = []; % delete columns north of Arakawa-C longitude domain
     mask_v(:, looky_TooNorth)       = []; % delete columns north of Arakawa-C longitude domain
     % z_v(:, looky_TooNorth, :)       = []; % delete columns north of Arakawa-C longitude domain
 end % (~isempty(looky_TooNorth))
@@ -244,8 +246,8 @@ looky_TooSouth = find(lat_v(1, :) < SouthBoundary); % NOTE: assumes latitudes ru
 if ~isempty(looky_TooSouth)
     lat_v(:, looky_TooSouth)        = []; % delete columns south of Arakawa-C longitude domain
     lon_v(:, looky_TooSouth)        = []; % delete columns south of Arakawa-C longitude domain
-    x_v(:, looky_TooSouth)          = []; % delete columns south of Arakawa-C longitude domain
-    y_v(:, looky_TooSouth)          = []; % delete columns south of Arakawa-C longitude domain
+    % x_v(:, looky_TooSouth)          = []; % delete columns south of Arakawa-C longitude domain
+    % y_v(:, looky_TooSouth)          = []; % delete columns south of Arakawa-C longitude domain
     mask_v(:, looky_TooSouth)       = []; % delete columns south of Arakawa-C longitude domain
     % z_v(:, looky_TooSouth, :)       = []; % delete columns south of Arakawa-C longitude domain
 end % (~isempty(looky_TooSouth))
@@ -254,8 +256,8 @@ looky_TooWest	= find(lon_v(:, 1) < WestBoundary); % NOTE: assumes longitudes run
 if ~isempty(looky_TooWest)
     lat_v(looky_TooWest, :)         = []; % delete rows west of Arakawa-C longitude domain
     lon_v(looky_TooWest, :)         = []; % delete rows west of Arakawa-C longitude domain
-    x_v(looky_TooWest, :)           = []; % delete rows west of Arakawa-C longitude domain
-    y_v(looky_TooWest, :)           = []; % delete rows west of Arakawa-C longitude domain
+    % x_v(looky_TooWest, :)           = []; % delete rows west of Arakawa-C longitude domain
+    % y_v(looky_TooWest, :)           = []; % delete rows west of Arakawa-C longitude domain
     mask_v(looky_TooWest, :)        = []; % delete rows west of Arakawa-C longitude domain
     % z_v(looky_TooWest, :, :)        = []; % delete rows west of Arakawa-C longitude domain
 end % (~isempty(looky_TooWest))
@@ -264,8 +266,8 @@ looky_TooEast	= find(lon_v(:, 1) > EastBoundary); % NOTE: assumes longitudes run
 if ~isempty(looky_TooEast)
     lat_v(looky_TooEast, :)         = []; % delete rows east of Arakawa-C longitude domain
     lon_v(looky_TooEast, :)         = []; % delete rows east of Arakawa-C longitude domain
-    x_v(looky_TooEast, :)           = []; % delete rows east of Arakawa-C longitude domain
-    y_v(looky_TooEast, :)           = []; % delete rows east of Arakawa-C longitude domain
+    % x_v(looky_TooEast, :)           = []; % delete rows east of Arakawa-C longitude domain
+    % y_v(looky_TooEast, :)           = []; % delete rows east of Arakawa-C longitude domain
     mask_v(looky_TooEast, :)        = []; % delete rows east of Arakawa-C longitude domain
 	% z_v(looky_TooEast, :, :)        = []; % delete rows east of Arakawa-C longitude domain
 end % (~isempty(looky_TooEast))
@@ -277,8 +279,8 @@ looky_TooNorth = find(lat_u(1, :) > NorthBoundary); % NOTE: assumes latitudes ru
 if ~isempty(looky_TooNorth)
     lat_u(:, looky_TooNorth)        = []; % delete columns north of Arakawa-C longitude domain
     lon_u(:, looky_TooNorth)        = []; % delete columns north of Arakawa-C longitude domain
-    x_u(:, looky_TooNorth)          = []; % delete columns north of Arakawa-C longitude domain
-    y_u(:, looky_TooNorth)          = []; % delete columns north of Arakawa-C longitude domain
+    % x_u(:, looky_TooNorth)          = []; % delete columns north of Arakawa-C longitude domain
+    % y_u(:, looky_TooNorth)          = []; % delete columns north of Arakawa-C longitude domain
     mask_u(:, looky_TooNorth)       = []; % delete columns north of Arakawa-C longitude domain
     % z_u(:, looky_TooNorth, :)       = []; % delete columns north of Arakawa-C longitude domain
 end % (~isempty(looky_TooNorth))
@@ -287,8 +289,8 @@ looky_TooSouth = find(lat_u(1, :) < SouthBoundary); % NOTE: assumes latitudes ru
 if ~isempty(looky_TooSouth)
     lat_u(:, looky_TooSouth)        = []; % delete columns south of Arakawa-C longitude domain
     lon_u(:, looky_TooSouth)        = []; % delete columns south of Arakawa-C longitude domain
-    x_u(:, looky_TooSouth)          = []; % delete columns south of Arakawa-C longitude domain
-    y_u(:, looky_TooSouth)          = []; % delete columns south of Arakawa-C longitude domain
+    % x_u(:, looky_TooSouth)          = []; % delete columns south of Arakawa-C longitude domain
+    % y_u(:, looky_TooSouth)          = []; % delete columns south of Arakawa-C longitude domain
     mask_u(:, looky_TooSouth)       = []; % delete columns south of Arakawa-C longitude domain
 	% z_u(:, looky_TooSouth, :)       = []; % delete columns south of Arakawa-C longitude domain
 end % (~isempty(looky_TooSouth))
@@ -297,8 +299,8 @@ looky_TooWest	= find(lon_u(:, 1) < WestBoundary); % NOTE: assumes longitudes run
 if ~isempty(looky_TooWest)
     lat_u(looky_TooWest, :)         = []; % delete rows west of Arakawa-C longitude domain
     lon_u(looky_TooWest, :)         = []; % delete rows west of Arakawa-C longitude domain
-    x_u(looky_TooWest, :)           = []; % delete rows west of Arakawa-C longitude domain
-    y_u(looky_TooWest, :)           = []; % delete rows west of Arakawa-C longitude domain
+    % x_u(looky_TooWest, :)           = []; % delete rows west of Arakawa-C longitude domain
+    % y_u(looky_TooWest, :)           = []; % delete rows west of Arakawa-C longitude domain
     mask_u(looky_TooWest, :)        = []; % delete rows west of Arakawa-C longitude domain
     % z_u(looky_TooWest, :, :)        = []; % delete rows west of Arakawa-C longitude domain
 end % (~isempty(looky_TooWest))
@@ -307,8 +309,8 @@ looky_TooEast	= find(lon_u(:, 1) > EastBoundary); % NOTE: assumes longitudes run
 if ~isempty(looky_TooEast)
     lat_u(looky_TooEast, :)         = []; % delete rows east of Arakawa-C longitude domain
     lon_u(looky_TooEast, :)         = []; % delete rows east of Arakawa-C longitude domain
-    x_u(looky_TooEast, :)           = []; % delete rows east of Arakawa-C longitude domain
-    y_u(looky_TooEast, :)           = []; % delete rows east of Arakawa-C longitude domain
+    % x_u(looky_TooEast, :)           = []; % delete rows east of Arakawa-C longitude domain
+    % y_u(looky_TooEast, :)           = []; % delete rows east of Arakawa-C longitude domain
     mask_u(looky_TooEast, :)        = []; % delete rows east of Arakawa-C longitude domain
 	% z_u(looky_TooEast, :, :)        = []; % delete rows east of Arakawa-C longitude domain
 end % (~isempty(looky_TooEast))
@@ -375,10 +377,6 @@ end
 % step 3d: clear temporary variables --------------------------------------
 clear looky_*
 % *************************************************************************
-
-
-
-
 
 % *************************************************************************
 % STEP 4: calculate ROMS cell dimensions & volume fluxes-------------------

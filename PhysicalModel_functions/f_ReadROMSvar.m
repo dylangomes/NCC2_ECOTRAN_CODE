@@ -1,39 +1,44 @@
 function val = f_ReadROMSvar(var, fileType)
-%   ReadROMSvar Read ROMS data for the specified var from the appropriate file.
+%   f_ReadROMSvar Read ROMS data for the specified var from the appropriate file.
 
-    % Infer whether we're working with UCSC or LiveOcean files depending on which file paths are defined
-    if ~isempty(f_GetFilePath("wc12_gr")) & ~isempty(f_GetFilePath("LiveOcean"))
-        error('Cannot define both UCSC and LiveOcean ROMS files in f_GetFilePath. Comment out the unused file paths.');
-    elseif ~isempty(f_GetFilePath("wc12_gr"))
-        ROMStype = 'UCSC';
-    elseif ~isempty(f_GetFilePath("LiveOcean"))
-        ROMStype = 'LiveOcean';
-    else
-        error('Paths to ROMS data files are not properly specified in f_GetFilePath');
-    end
+    ROMStype = f_GetROMStype();
 
     % Read from LiveOcean files
     if strcmp(ROMStype, "LiveOcean")
-        mainFile = f_GetFilePath("LiveOcean");
+        gridFile = f_GetFilePath("LiveOceanGrid");
         metricsFile = f_GetFilePath("LiveOceanMetrics");
+        exampleYearFile = f_GetFilePath("LiveOceanExampleYear");
 
         % Determine which file contains the variable
         if any(ismember(var, ["x_psi", "y_psi"]))
             fileType = "metrics";
+        elseif any(ismember(var, ["lat_rho_flow", "lon_rho_flow"]))
+            var = strrep(var, "_flow", "");
+            fileType = "exampleYear";
         else
-            fileType = "main";
+            fileType = "grid";
         end
 
         % Read variable
         switch fileType
-            case "main"
-                ncid = netcdf.open(mainFile, 'NC_NOWRITE');
+            case "grid"
+                ncid = netcdf.open(gridFile, 'NC_NOWRITE');
+                varid = netcdf.inqVarID(ncid, var);
+                val = netcdf.getVar(ncid, varid);
+                netcdf.close(ncid);
             case "metrics"
-                ncid = netcdf.open(metricsFile, 'NC_NOWRITE');
+                ROMSmetrics = load(metricsFile, "ROMSmetrics");
+                val = ROMSmetrics.ROMSmetrics.(var);
+
+            case "exampleYear"
+                ncid = netcdf.open(exampleYearFile, 'NC_NOWRITE');
+                varid = netcdf.inqVarID(ncid, var);
+                val = netcdf.getVar(ncid, varid);
+                netcdf.close(ncid);
         end
 
     % Read from UCSC data files
-    elseif strcmp(ROMStype, 'UCSC')
+    elseif strcmp(ROMStype, "UCSC")
         readFile_DepthLevels = f_GetFilePath("depth_levels_trimmed");
         readFile_grid = f_GetFilePath("wc12_gr");
         readFile_ExampleYear = f_GetFilePath("wc12_avg_2005_trimmed");
@@ -55,17 +60,22 @@ function val = f_ReadROMSvar(var, fileType)
         switch fileType
             case "grid"
                 ncid = netcdf.open(readFile_grid, 'NC_NOWRITE');
+                varid = netcdf.inqVarID(ncid, var);
+                val = netcdf.getVar(ncid, varid);
+                netcdf.close(ncid);
 
             case "depth"
                 ncid = netcdf.open(readFile_DepthLevels, 'NC_NOWRITE');
+                varid = netcdf.inqVarID(ncid, var);
+                val = netcdf.getVar(ncid, varid);
+                netcdf.close(ncid);
 
             case "exampleYear"
                 ncid = netcdf.open(readFile_ExampleYear, 'NC_NOWRITE');
+                varid = netcdf.inqVarID(ncid, var);
+                val = netcdf.getVar(ncid, varid);
+                netcdf.close(ncid);
         end
     end
-
-    varid = netcdf.inqVarID(ncid, var);
-    val = netcdf.getVar(ncid, varid);
-    netcdf.close(ncid);
 
 end

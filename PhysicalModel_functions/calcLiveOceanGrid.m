@@ -17,6 +17,6 @@ for i = 1:numel(ROMSfiles)
     thisPath = fullfile(thisFile.folder, thisFile.name);
 
     % Calculate using myroms.matlab.grid.roms_metrics
-    thisROMSmetrics = roms_metrics(thisPath);
-
+    ROMSmetrics = roms_metrics(thisPath);
+    save(fullfile(thisFile.folder, strrep(thisFile.name, '.nc', '_ROMSmetrics.mat')), 'ROMSmetrics');
 end

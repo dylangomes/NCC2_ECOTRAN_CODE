@@ -219,8 +219,14 @@ W_to_microE               = 4.6;        % convert (W m^-2) to (microE m^-2 s^-1)
 
 % *************************************************************************
 % STEP 3: prepare ROMS grid------------------------------------------------
-[~, names, ~] = fileparts([f_GetFilePath('wc12_gr'), ...
-    f_GetFilePath('depth_levels_trimmed'), f_GetFilePath('wc12_avg_2005_trimmed')]);
+ROMStype = f_GetROMStype();
+if strcmp(ROMStype, "UCSC")
+    ROMSfiles = [f_GetFilePath("wc12_gr"), f_GetFilePath("depth_levels_trimmed"), f_GetFilePath("wc12_avg_2005_trimmed")];
+elseif strcmp(ROMStype, "LiveOcean")
+    ROMSfiles = [f_GetFilePath("LiveOceanGrid"), f_GetFilePath("LiveOceanMetrics"), f_GetFilePath("LiveOceanExampleYear")];
+end
+
+[~, names, ~] = fileparts(ROMSfiles);
 ROMSgridMetadata.gridFile = names(1);
 ROMSgridMetadata.depthFile = names(2);
 ROMSgridMetadata.exampleFile = names(3);

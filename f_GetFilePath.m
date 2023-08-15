@@ -18,6 +18,7 @@ function filePath = f_GetFilePath(key)
     filePaths("preproDir") = fullfile(projectPath, "prepro");
 
     % NOTE: COMMENT OUT EITHER UCSC OR LIVEOCEAN PATHS DEPENDING ON WHICH FILE TYPES YOU'RE USING
+
     % USCS paths
     % ROMSdir = "/Volumes/QEDA_ARCHIVE/QEDA/NWFSC/ECOTRAN/fromJim";
     % filePaths("wc12_gr") = fullfile(ROMSdir, "wc12_grd.nc");
@@ -26,7 +27,10 @@ function filePath = f_GetFilePath(key)
 
     % LiveOcean paths
     ROMSdir = "/Volumes/QEDA_ARCHIVE/QEDA/NWFSC/ECOTRAN/LiveOcean";
-
+    filePaths("LiveOceanGrid") = fullfile(ROMSdir, "LiveOcean_2017.nc");
+    filePaths("LiveOceanMetrics") = fullfile(ROMSdir, "LiveOcean_2017_ROMSmetrics.mat");
+    filePaths("LiveOceanExampleYear") = fullfile(ROMSdir, "LiveOcean_2017.nc");
+    
     % END OF SECTION TO COMMENT/UNCOMMENT
 
     filePaths("ROMSdir") = ROMSdir;

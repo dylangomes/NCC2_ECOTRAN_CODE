@@ -178,16 +178,16 @@ lon_rho_flow = f_ReadROMSvar("lon_rho_flow"); % 'longitude of RHO-points'; (2D m
 % *************************************************************************
 % STEP 3: trim full grid ROMS terms to only those WITHIN the NCC ----------
 % step 3a: round lats & lons (needed because of TINY rounding errors) -----
-lat_rho   	= round(lat_rho, 2);
-lon_rho  	= round(lon_rho, 2);
-lat_v   	= round(lat_v, 2);
-lon_v    	= round(lon_v, 2);
-lat_u    	= round(lat_u, 2);
-lon_u   	= round(lon_u, 2);
-lat_psi     = round(lat_psi, 2);
-lon_psi     = round(lon_psi, 2);
-lat_rho_flow = round(lat_rho_flow, 2);
-lon_rho_flow = round(lon_rho_flow, 2);
+lat_rho   	= round(lat_rho, 3);
+lon_rho  	= round(lon_rho, 3);
+lat_v   	= round(lat_v, 3);
+lon_v    	= round(lon_v, 3);
+lat_u    	= round(lat_u, 3);
+lon_u   	= round(lon_u, 3);
+lat_psi     = round(lat_psi, 3);
+lon_psi     = round(lon_psi, 3);
+lat_rho_flow = round(lat_rho_flow, 3);
+lon_rho_flow = round(lon_rho_flow, 3);
 % -------------------------------------------------------------------------
 
 

@@ -592,8 +592,10 @@ switch switch_PhysicalModel
         ROMS_temperature_initial     	= ECOTRANphysics.ROMS_temperature_initial;          % (deg C); (horizontal vector: 1 X num_boxes)
         ROMS_diatom                     = ECOTRANphysics.diatom_timeseries;                 % (mmole N/m3); (2D matrix: num_t X num_boxes)
         ROMS_nanophytoplankton          = ECOTRANphysics.nanophytoplankton_timeseries;      % (mmole N/m3); (2D matrix: num_t X num_boxes)
+        ROMS_phytoplankton          = ECOTRANphysics.phytoplankton_timeseries;      % (mmole N/m3); (2D matrix: num_t X num_boxes)
         ROMS_diatom_initial          	= ECOTRANphysics.ROMS_diatom_initial;               % (mmoles N/m3); (horizontal vector: 1 X num_boxes)
         ROMS_nanophytoplankton_initial	= ECOTRANphysics.ROMS_nanophytoplankton_initial;	% (mmoles N/m3); (horizontal vector: 1 X num_boxes)
+        ROMS_phytoplankton_initial	= ECOTRANphysics.ROMS_phytoplankton_initial;	% (mmoles N/m3); (horizontal vector: 1 X num_boxes)
 
     	% end (case '3D_ROMS') --------------
 
@@ -918,17 +920,29 @@ switch switch_ExternalDriver
         % use to define external forcing rate time-series
         %   NOTE: use for 3D ROMS-BGC settings
 
-        looky_externalForcing               = [looky_lrgPhyto looky_smlPhyto]; % identify externalForcing driver group(s);	% row address(es) of externally forced input group(s) (e.g., NO3, phytoplankton, juvenile salmon)
+        if strcmp(ROMStype, "UCSC")
+            looky_externalForcing               = [looky_lrgPhyto looky_smlPhyto]; % identify externalForcing driver group(s);	% row address(es) of externally forced input group(s) (e.g., NO3, phytoplankton, juvenile salmon)
+        elseif strcmp(ROMStype, "LiveOcean")
+            looky_externalForcing               = [looky_phytoplankton]; % identify externalForcing driver group(s);	% row address(es) of externally forced input group(s) (e.g., NO3, phytoplankton, juvenile salmon)
+        end
+
         num_externalForcing_grps         	= length(looky_externalForcing); % number of externally forced groups
 
         ROMS_diatom                         = ROMS_diatom            .* (qb(looky_lrgPhyto) / 365); % convert to q rate; (mmole N/m3/d); (2D matrix: num_t X num_boxes)
         ROMS_nanophytoplankton            	= ROMS_nanophytoplankton .* (qb(looky_smlPhyto) / 365); % convert to q rate; (mmole N/m3/d); (2D matrix: num_t X num_boxes)
+        disp('dwj: Need to verify that we can use looky_phytoplankton here');
+        ROMS_phytoplankton            	= ROMS_phytoplankton .* (qb(looky_phytoplankton) / 365); % convert to q rate; (mmole N/m3/d); (2D matrix: num_t X num_boxes)
 
         ROMS_diatom                         = reshape(ROMS_diatom,            [num_t, 1, num_boxes]);	% (mmole N/m3/d); (3D matrix: num_t X 1 X num_boxes)
         ROMS_nanophytoplankton            	= reshape(ROMS_nanophytoplankton, [num_t, 1, num_boxes]);	% (mmole N/m3/d); (3D matrix: num_t X 1 X num_boxes)
+        ROMS_phytoplankton            	= reshape(ROMS_phytoplankton, [num_t, 1, num_boxes]);	% (mmole N/m3/d); (3D matrix: num_t X 1 X num_boxes)
 
-        externalForcing(:, 1, :)            = ROMS_diatom; % forced external input; (mmole N/m3/d); (3D matrix: num_t X num_externalForcing_grps X num_boxes)
-        externalForcing(:, 2, :)            = ROMS_nanophytoplankton; % forced external input; (mmole N/m3/d); (3D matrix: num_t X num_externalForcing_grps X num_boxes)
+        if strcmp(ROMStype, "UCSC")
+            externalForcing(:, 1, :)            = ROMS_diatom; % forced external input; (mmole N/m3/d); (3D matrix: num_t X num_externalForcing_grps X num_boxes)
+            externalForcing(:, 2, :)            = ROMS_nanophytoplankton; % forced external input; (mmole N/m3/d); (3D matrix: num_t X num_externalForcing_grps X num_boxes)
+        elseif strcmp(ROMStype, "LiveOcean")
+            externalForcing(:, 1, :)            = ROMS_phytoplankton; % forced external input; (mmole N/m3/d); (3D matrix: num_t X num_externalForcing_grps X num_boxes)
+        end
 
         % deactivate nutrient uptake by phytoplankton when driving model with BGC model output
         %   NOTE: this change means that initial conditions MUST be defined by the BGC externalForcing driver
@@ -1660,8 +1674,12 @@ for MonteCarlo_loop = 1:num_MC
 
             production_initial_driver                           = zeros(1, num_grps, num_boxes);        % initialize DriverProductionVector; (3D matrix: 1 X num_grps X num_boxes)
 
-            production_initial_driver(1, looky_lrgPhyto, :)    	= mean(externalForcing(:, 1, :), 1);	% plug in mean ROMS_diatom input rate; average over entire time-series; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
-            production_initial_driver(1, looky_smlPhyto, :)     	= mean(externalForcing(:, 2, :), 1);	% plug in mean ROMS_nanophytoplankton input rate; average over entire time-series; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
+            if strcmp(ROMStype, "UCSC")
+                production_initial_driver(1, looky_lrgPhyto, :)    	= mean(externalForcing(:, 1, :), 1);	% plug in mean ROMS_diatom input rate; average over entire time-series; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
+                production_initial_driver(1, looky_smlPhyto, :)     	= mean(externalForcing(:, 2, :), 1);	% plug in mean ROMS_nanophytoplankton input rate; average over entire time-series; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
+            elseif strcmp(ROMStype, "LiveOcean")
+                production_initial_driver(1, looky_phytoplankton, :) = mean(externalForcing(:, 1, :), 1); % plug in mean ROMS_phytoplankton input rate; average over entire time-series; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
+            end
 
             % finalize initial condition calculations
             [production_initial, fname_InitialProductionRates]	= f_InitialProductionRates_02012022(ODEinput, production_initial_driver, t_initial);  % QQQ NH4 uptake turned OFF; initial or mean production rates (actually consumption inflow); (mmole N/m3/d); (2D matrix: num_grps X num_boxes); NOTE: code does NOT make transfer of bnthNH4 from surface to sub-surface boxes

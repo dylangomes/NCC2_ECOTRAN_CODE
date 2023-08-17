@@ -188,6 +188,7 @@ build_temperature     	= zeros((365*num_years), num_boxes);   % initialize; (2D 
 % build_DON               = zeros((365*num_years), num_boxes);   % initialize; (2D matrix: (365*num_years) X num_boxes)
 build_diatom            = zeros((365*num_years), num_boxes);   % initialize; (2D matrix: (365*num_years) X num_boxes)
 build_nanophytoplankton	= zeros((365*num_years), num_boxes);   % initialize; (2D matrix: (365*num_years) X num_boxes)
+build_phytoplankton	= zeros((365*num_years), num_boxes);   % initialize; (2D matrix: (365*num_years) X num_boxes)
 % build_microzooplankton	= zeros((365*num_years), num_boxes);   % initialize; (2D matrix: (365*num_years) X num_boxes)
 % build_mesozooplankton	= zeros((365*num_years), num_boxes);   % initialize; (2D matrix: (365*num_years) X num_boxes)
 % build_Pzooplankton     	= zeros((365*num_years), num_boxes);   % initialize; (2D matrix: (365*num_years) X num_boxes)
@@ -264,6 +265,7 @@ for year_loop = 1:num_years
 %     build_PON(pointer_1:pointer_2, :)                                               = ROMSflux.ROMS_PON; % PON time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
     build_diatom(pointer_1:pointer_2, :)                                            = ROMSflux.ROMS_diatom; % diatom time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
     build_nanophytoplankton(pointer_1:pointer_2, :)                                 = ROMSflux.ROMS_nanophytoplankton; % nanophytoplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
+    build_phytoplankton(pointer_1:pointer_2, :)                                 = ROMSflux.ROMS_phytoplankton; % phytoplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
 %     build_microzooplankton(pointer_1:pointer_2, :)                                  = ROMSflux.ROMS_microzooplankton; % microzooplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
 %     build_mesozooplankton(pointer_1:pointer_2, :)                                 	= ROMSflux.ROMS_mesozooplankton; % mesozooplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
 %     build_Pzooplankton(pointer_1:pointer_2, :)                                    	= ROMSflux.ROMS_Pzooplankton; % Pzooplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
@@ -325,6 +327,7 @@ build_temperature(isnan(build_temperature))             = -99999; % convert NaNs
 % build_PON(isnan(build_PON))                             = -99999; % convert NaNs, interp1 doesn't like NaNs
 build_diatom(isnan(build_diatom))                       = -99999; % convert NaNs, interp1 doesn't like NaNs
 build_nanophytoplankton(isnan(build_nanophytoplankton))	= -99999; % convert NaNs, interp1 doesn't like NaNs
+build_phytoplankton(isnan(build_phytoplankton))	= -99999; % convert NaNs, interp1 doesn't like NaNs
 % build_microzooplankton(isnan(build_microzooplankton))	= -99999; % convert NaNs, interp1 doesn't like NaNs
 % build_mesozooplankton(isnan(build_mesozooplankton))     = -99999; % convert NaNs, interp1 doesn't like NaNs
 % build_Pzooplankton(isnan(build_Pzooplankton))           = -99999; % convert NaNs, interp1 doesn't like NaNs
@@ -336,6 +339,7 @@ ROMS_temperature                         	= interp1(temp_ROMS_time, build_temper
 % ROMS_PON                                    = interp1(temp_ROMS_time, build_PON, t_grid_real, 'pchip');                 % (2D matrix: num_t X num_boxes)
 ROMS_diatom                                 = interp1(temp_ROMS_time, build_diatom, t_grid_real, 'pchip');              % (2D matrix: num_t X num_boxes)
 ROMS_nanophytoplankton                      = interp1(temp_ROMS_time, build_nanophytoplankton, t_grid_real, 'pchip');	% (2D matrix: num_t X num_boxes)
+ROMS_phytoplankton                      = interp1(temp_ROMS_time, build_phytoplankton, t_grid_real, 'pchip');	% (2D matrix: num_t X num_boxes)
 % ROMS_microzooplankton                       = interp1(temp_ROMS_time, build_microzooplankton, t_grid_real, 'pchip');    % (2D matrix: num_t X num_boxes)
 % ROMS_mesozooplankton                        = interp1(temp_ROMS_time, build_mesozooplankton, t_grid_real, 'pchip');     % (2D matrix: num_t X num_boxes)
 % ROMS_Pzooplankton                           = interp1(temp_ROMS_time, build_Pzooplankton, t_grid_real, 'pchip');        % (2D matrix: num_t X num_boxes)
@@ -347,6 +351,7 @@ ROMS_temperature(ROMS_temperature == -99999)                = NaN; % convert nul
 % ROMS_PON(ROMS_PON == -99999)                                = NaN; % convert null entries back to NaN
 ROMS_diatom(ROMS_diatom == -99999)                          = NaN; % convert null entries back to NaN
 ROMS_nanophytoplankton(ROMS_nanophytoplankton == -99999)	= NaN; % convert null entries back to NaN
+ROMS_phytoplankton(ROMS_phytoplankton == -99999)	= NaN; % convert null entries back to NaN
 % ROMS_microzooplankton(ROMS_microzooplankton == -99999)      = NaN; % convert null entries back to NaN
 % ROMS_mesozooplankton(ROMS_mesozooplankton == -99999)        = NaN; % convert null entries back to NaN
 % ROMS_Pzooplankton(v == -99999)                              = NaN; % convert null entries back to NaN
@@ -361,6 +366,7 @@ ROMS_nanophytoplankton(ROMS_nanophytoplankton == -99999)	= NaN; % convert null e
 ROMS_temperature_initial        = mean(ROMS_temperature, 1); % (horizontal vector: 1 X num_boxes)
 ROMS_diatom_initial             = mean(ROMS_diatom, 1); % (horizontal vector: 1 X num_boxes)
 ROMS_nanophytoplankton_initial	= mean(ROMS_nanophytoplankton, 1); % (horizontal vector: 1 X num_boxes)
+ROMS_phytoplankton_initial	= mean(ROMS_phytoplankton, 1); % (horizontal vector: 1 X num_boxes)
 % -------------------------------------------------------------------------
 
 
@@ -627,6 +633,7 @@ ECOTRANphysics.temperature_reference            = repmat(11.02, [1, num_boxes]);
 % ECOTRANphysics.PON_timeseries                   = ROMS_PON;                 % (mmole N/m3); (2D matrix: num_t X num_boxes)
 ECOTRANphysics.diatom_timeseries                = ROMS_diatom;              % (mmole N/m3); (2D matrix: num_t X num_boxes)
 ECOTRANphysics.nanophytoplankton_timeseries     = ROMS_nanophytoplankton;	% (mmole N/m3); (2D matrix: num_t X num_boxes)
+ECOTRANphysics.phytoplankton_timeseries     = ROMS_phytoplankton;	% (mmole N/m3); (2D matrix: num_t X num_boxes)
 % ECOTRANphysics.microzooplankton_timeseries      = ROMS_microzooplankton;    % (mmole N/m3); (2D matrix: num_t X num_boxes)
 % ECOTRANphysics.mesozooplankton_timeseries       = ROMS_mesozooplankton;     % (mmole N/m3); (2D matrix: num_t X num_boxes)
 % ECOTRANphysics.Pzooplankton_timeseries          = ROMS_Pzooplankton;        % (mmole N/m3); (2D matrix: num_t X num_boxes)
@@ -634,6 +641,7 @@ ECOTRANphysics.nanophytoplankton_timeseries     = ROMS_nanophytoplankton;	% (mmo
 ECOTRANphysics.ROMS_temperature_initial         = ROMS_temperature_initial; % (deg C); (horizontal vector: 1 X num_boxes)
 ECOTRANphysics.ROMS_diatom_initial              = ROMS_diatom_initial; % (mmoles N/m3); (horizontal vector: 1 X num_boxes)
 ECOTRANphysics.ROMS_nanophytoplankton_initial	= ROMS_nanophytoplankton_initial; % (mmoles N/m3); (horizontal vector: 1 X num_boxes)
+ECOTRANphysics.ROMS_phytoplankton_initial	= ROMS_phytoplankton_initial; % (mmoles N/m3); (horizontal vector: 1 X num_boxes)
 
 % *************************************************************************
 

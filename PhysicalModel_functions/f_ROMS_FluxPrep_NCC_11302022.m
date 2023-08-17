@@ -141,10 +141,26 @@ temperature         = netcdf.getVar(ncid, varid);       % potential temperature;
 % varid               = netcdf.inqVarID(ncid, 'PON');
 % PON                 = netcdf.getVar(ncid, varid); % time-averaged particulate organic nitrogen concentration; (millimole N /m3); % (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z (42; s_rho) X num_days)
 
-varid               = netcdf.inqVarID(ncid, 'nanophytoplankton');
-nanophytoplankton	= netcdf.getVar(ncid, varid); % time-averaged nanophytoplankton biomass; (millimole N /m3); % (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z (42; s_rho) X num_days)
-varid               = netcdf.inqVarID(ncid, 'diatom');
-diatom              = netcdf.getVar(ncid, varid); % time-averaged diatom biomass; (millimole N /m3); % (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z (42; s_rho) X num_days)
+ROMStype = f_GetROMStype();
+
+if strcmp(ROMStype, "UCSC")
+    varid               = netcdf.inqVarID(ncid, 'nanophytoplankton');
+    nanophytoplankton	= netcdf.getVar(ncid, varid); % time-averaged nanophytoplankton biomass; (millimole N /m3); % (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z (42; s_rho) X num_days)
+    varid               = netcdf.inqVarID(ncid, 'diatom');
+    diatom              = netcdf.getVar(ncid, varid); % time-averaged diatom biomass; (millimole N /m3); % (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z (42; s_rho) X num_days)
+
+    % Placeholder for phytoplankton
+    phytoplankton = nanophytoplankton.*0;
+elseif strcmp(ROMStype, "LiveOcean")
+    varid = netcdf.inqVarID(ncid, 'phytoplankton');
+    phytoplankton = netcdf.getVar(ncid, varid);
+
+    % Placeholders for nanophytoplankton and diatom
+    nanophytoplankton = phytoplankton.*0;
+    diatom = phytoplankton.*0;
+end
+
+
 
 % varid               = netcdf.inqVarID(ncid, 'microzooplankton');
 % microzooplankton	= netcdf.getVar(ncid, varid); % time-averaged microzooplankton biomass; (millimole N /m3); % (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z (42; s_rho) X num_days)
@@ -320,6 +336,7 @@ temperature         = temperature       .* repmat(mask_rho, [1, 1, num_z, num_t_
 % PON                 = PON               .* repmat(mask_rho, [1, 1, num_z, num_t_ROMS]);   % (m/s); (4D matrix: rho longitude (51) X rho latitude (81) X num_z (42) X num_t_ROMS (366))
 diatom              = diatom            .* repmat(mask_rho, [1, 1, num_z, num_t_ROMS]);   % (m/s); (4D matrix: rho longitude (51) X rho latitude (81) X num_z (42) X num_t_ROMS (366))
 nanophytoplankton	= nanophytoplankton	.* repmat(mask_rho, [1, 1, num_z, num_t_ROMS]);   % (m/s); (4D matrix: rho longitude (51) X rho latitude (81) X num_z (42) X num_t_ROMS (366))
+phytoplankton = phytoplankton.*repmat(mask_rho, [1, 1, num_z, num_t_ROMS]); % (m/s); (4D matrix: rho longitude X rho latitude X num_z X num_t_ROMS)
 % microzooplankton    = microzooplankton  .* repmat(mask_rho, [1, 1, num_z, num_t_ROMS]);   % (m/s); (4D matrix: rho longitude (51) X rho latitude (81) X num_z (42) X num_t_ROMS (366))
 % mesozooplankton     = mesozooplankton   .* repmat(mask_rho, [1, 1, num_z, num_t_ROMS]);   % (m/s); (4D matrix: rho longitude (51) X rho latitude (81) X num_z (42) X num_t_ROMS (366))
 % Pzooplankton        = Pzooplankton      .* repmat(mask_rho, [1, 1, num_z, num_t_ROMS]);   % (m/s); (4D matrix: rho longitude (51) X rho latitude (81) X num_z (42) X num_t_ROMS (366))
@@ -442,6 +459,7 @@ agg_temperature_vertical        = zeros(rows_rho, clms_rho, num_agg_z, num_t_ROM
 % agg_PON_vertical                = zeros(rows_rho, clms_rho, num_agg_z, num_t_ROMS); % initialize; (4D matrix: rho longitude (51) X rho latitude (81) X num_agg_z X num_t_ROMS)
 agg_diatom_vertical             = zeros(rows_rho, clms_rho, num_agg_z, num_t_ROMS); % initialize; (4D matrix: rho longitude (51) X rho latitude (81) X num_agg_z X num_t_ROMS)
 agg_nanophytoplankton_vertical	= zeros(rows_rho, clms_rho, num_agg_z, num_t_ROMS); % initialize; (4D matrix: rho longitude (51) X rho latitude (81) X num_agg_z X num_t_ROMS)
+agg_phytoplankton_vertical	= zeros(rows_rho, clms_rho, num_agg_z, num_t_ROMS); % initialize; (4D matrix: rho longitude X rho latitude X num_agg_z X num_t_ROMS)
 % agg_microzooplankton_vertical	= zeros(rows_rho, clms_rho, num_agg_z, num_t_ROMS); % initialize; (4D matrix: rho longitude (51) X rho latitude (81) X num_agg_z X num_t_ROMS)
 % agg_mesozooplankton_vertical	= zeros(rows_rho, clms_rho, num_agg_z, num_t_ROMS); % initialize; (4D matrix: rho longitude (51) X rho latitude (81) X num_agg_z X num_t_ROMS)
 % agg_Pzooplankton_vertical       = zeros(rows_rho, clms_rho, num_agg_z, num_t_ROMS); % initialize; (4D matrix: rho longitude (51) X rho latitude (81) X num_agg_z X num_t_ROMS)
@@ -568,6 +586,11 @@ for depth_loop = 1:num_agg_z
     agg_nanophytoplankton                           	= sum((nanophytoplankton .* ROMScell_weighting), 3) ./ sum(ROMScell_weighting, 3); % (4D matrix: rho longitude (51) X rho latitude (81) X 1 X num_z (42))
     agg_nanophytoplankton(isnan(agg_nanophytoplankton))	= 0; % correct for div/0 errors
     agg_nanophytoplankton_vertical(:, :, depth_loop, :)	= agg_nanophytoplankton; % (4D matrix: rho longitude (51) X rho latitude (81) X num_agg_z X num_t_ROMS)
+
+    % phytoplankton
+    agg_phytoplankton                           	= sum((phytoplankton .* ROMScell_weighting), 3) ./ sum(ROMScell_weighting, 3); % (4D matrix: rho longitude X rho latitude X 1 X num_z)
+    agg_phytoplankton(isnan(agg_phytoplankton))	= 0; % correct for div/0 errors
+    agg_phytoplankton_vertical(:, :, depth_loop, :)	= agg_phytoplankton; % (4D matrix: rho longitude X rho latitude X num_agg_z X num_t_ROMS)
     
 %     % microzooplankton
 %     agg_microzooplankton                                = sum((microzooplankton .* ROMScell_weighting), 3) ./ sum(ROMScell_weighting, 3); % (4D matrix: rho longitude (51) X rho latitude (81) X 1 X num_z (42))
@@ -777,7 +800,7 @@ clear repmat_dist_EW_v repmat_dist_NS_u repmat_area_*
 clear required_w_top required_w_bottom
 clear looky_*
 clear agg_v_height_psi agg_u_height_psi psi_height_*
-clear agg_temperature agg_NH4 agg_NO3 agg_DON agg_PON agg_diatom agg_nanophytoplankton
+clear agg_temperature agg_NH4 agg_NO3 agg_DON agg_PON agg_diatom agg_nanophytoplankton agg_phytoplankton
 clear agg_microzooplankton agg_mesozooplankton agg_Pzooplankton
 % *************************************************************************
 
@@ -1415,6 +1438,7 @@ build_mean_temperature          = zeros(num_t_ROMS, num_domains, num_agg_z); % t
 % build_mean_PON                  = zeros(num_t_ROMS, num_domains, num_agg_z); % PON time-series (mmole N/m3); (3D matrix: num_t_ROMS X num_domains X num_agg_z)
 build_mean_diatom               = zeros(num_t_ROMS, num_domains, num_agg_z); % diatom time-series (mmole N/m3); (3D matrix: num_t_ROMS X num_domains X num_agg_z)
 build_mean_nanophytoplankton	= zeros(num_t_ROMS, num_domains, num_agg_z); % nanophytoplankton time-series (mmole N/m3); (3D matrix: num_t_ROMS X num_domains X num_agg_z)
+build_mean_phytoplankton	= zeros(num_t_ROMS, num_domains, num_agg_z); % phytoplankton time-series (mmole N/m3); (3D matrix: num_t_ROMS X num_domains X num_agg_z)
 % build_mean_microzooplankton     = zeros(num_t_ROMS, num_domains, num_agg_z); % microzooplankton time-series (mmole N/m3); (3D matrix: num_t_ROMS X num_domains X num_agg_z)
 % build_mean_mesozooplankton      = zeros(num_t_ROMS, num_domains, num_agg_z); % mesozooplankton time-series (mmole N/m3); (3D matrix: num_t_ROMS X num_domains X num_agg_z)
 % build_mean_Pzooplankton         = zeros(num_t_ROMS, num_domains, num_agg_z); % Pzooplankton time-series (mmole N/m3); (3D matrix: num_t_ROMS X num_domains X num_agg_z)
@@ -1440,6 +1464,9 @@ agg_diatom_vertical_trim(agg_diatom_vertical_trim == 0) = NaN; % make zeros (fro
 
 agg_nanophytoplankton_vertical_trim	= agg_nanophytoplankton_vertical(2:(end-1), 2:(end-1), :, :); % prune EW & NW borders to align with agg_w; (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_agg_z X num_t_ROMS);
 agg_nanophytoplankton_vertical_trim(agg_nanophytoplankton_vertical_trim == 0) = NaN; % make zeros (from mask) into NaN values (so that zeros aren't included in averaging)
+
+agg_phytoplankton_vertical_trim	= agg_phytoplankton_vertical(2:(end-1), 2:(end-1), :, :); % prune EW & NW borders to align with agg_w; (4D matrix: rho longitude-2 X rho latitude-2 X num_agg_z X num_t_ROMS);
+agg_phytoplankton_vertical_trim(agg_phytoplankton_vertical_trim == 0) = NaN; % make zeros (from mask) into NaN values (so that zeros aren't included in averaging)
 
 % agg_microzooplankton_vertical_trim	= agg_microzooplankton_vertical(2:(end-1), 2:(end-1), :, :); % prune EW & NW borders to align with agg_w; (4D matrix: rho longitude-2 (49) X rho latitude-2 (79) X num_agg_z X num_t_ROMS);
 % agg_microzooplankton_vertical_trim(agg_microzooplankton_vertical_trim == 0) = NaN; % make zeros (from mask) into NaN values (so that zeros aren't included in averaging)
@@ -1474,6 +1501,9 @@ for domain_loop = 1:num_domains
                                                                 current_grid_addresses_rho(south):current_grid_addresses_rho(north), ...
                                                                 :, :); % potential temperature in ECOTRAN boxes; (Celsius); (4D matrix: num cells (longitude) X num cells (latitude) X num_agg_z X num_ROMS_t)
     current_domain_nanophytoplankton	= agg_nanophytoplankton_vertical_trim(current_grid_addresses_rho(west):current_grid_addresses_rho(east), ...
+                                                                current_grid_addresses_rho(south):current_grid_addresses_rho(north), ...
+                                                                :, :); % potential temperature in ECOTRAN boxes; (Celsius); (4D matrix: num cells (longitude) X num cells (latitude) X num_agg_z X num_ROMS_t)
+    current_domain_phytoplankton	= agg_phytoplankton_vertical_trim(current_grid_addresses_rho(west):current_grid_addresses_rho(east), ...
                                                                 current_grid_addresses_rho(south):current_grid_addresses_rho(north), ...
                                                                 :, :); % potential temperature in ECOTRAN boxes; (Celsius); (4D matrix: num cells (longitude) X num cells (latitude) X num_agg_z X num_ROMS_t)
 %     current_domain_microzooplankton     = agg_microzooplankton_vertical_trim(current_grid_addresses_rho(west):current_grid_addresses_rho(east), ...
@@ -1513,6 +1543,9 @@ for domain_loop = 1:num_domains
 
 	sum_weighted_nanophytoplankton	= sum((current_domain_nanophytoplankton .* current_area_floor_face), 1, 'omitnan');
     sum_weighted_nanophytoplankton	= sum(sum_weighted_nanophytoplankton, 2, 'omitnan'); % (4D matrix: 1 X 1 X num_agg_z X num_ROMS_t)
+
+    sum_weighted_phytoplankton	= sum((current_domain_phytoplankton .* current_area_floor_face), 1, 'omitnan');
+    sum_weighted_phytoplankton	= sum(sum_weighted_phytoplankton, 2, 'omitnan'); % (4D matrix: 1 X 1 X num_agg_z X num_ROMS_t)
 
 % 	sum_weighted_microzooplankton	= sum((current_domain_microzooplankton .* current_area_floor_face), 1, 'omitnan');
 %     sum_weighted_microzooplankton	= sum(sum_weighted_microzooplankton, 2, 'omitnan'); % (4D matrix: 1 X 1 X num_agg_z X num_ROMS_t)
@@ -1554,6 +1587,10 @@ for domain_loop = 1:num_domains
     current_mean_nanophytoplankton	= squeeze(current_mean_nanophytoplankton)'; % (2D matrix: num_t_ROMS X num_agg_z)
     current_mean_nanophytoplankton	= reshape(current_mean_nanophytoplankton, [num_t_ROMS, 1, num_agg_z]); % (3D matrix: num_t_ROMS X 1 X num_agg_z)
 
+    current_mean_phytoplankton	= sum_weighted_phytoplankton ./ sum_area_floor_face; % (4D matrix: 1 X 1 X num_agg_z X num_t_ROMS)
+    current_mean_phytoplankton	= squeeze(current_mean_phytoplankton)'; % (2D matrix: num_t_ROMS X num_agg_z)
+    current_mean_phytoplankton	= reshape(current_mean_phytoplankton, [num_t_ROMS, 1, num_agg_z]); % (3D matrix: num_t_ROMS X 1 X num_agg_z)
+
 % 	current_mean_microzooplankton	= sum_weighted_microzooplankton ./ sum_area_floor_face; % (4D matrix: 1 X 1 X num_agg_z X num_t_ROMS)
 %     current_mean_microzooplankton	= squeeze(current_mean_microzooplankton)'; % (2D matrix: num_t_ROMS X num_agg_z)
 %     current_mean_microzooplankton	= reshape(current_mean_microzooplankton, [num_t_ROMS, 1, num_agg_z]); % (3D matrix: num_t_ROMS X 1 X num_agg_z)
@@ -1574,6 +1611,7 @@ for domain_loop = 1:num_domains
 %     build_mean_PON(:, domain_loop, :)               = current_mean_PON; % PON time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_domains X num_agg_z)
     build_mean_diatom(:, domain_loop, :)            = current_mean_diatom; % diatom time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_domains X num_agg_z)
     build_mean_nanophytoplankton(:, domain_loop, :)	= current_mean_nanophytoplankton; % nanophytoplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_domains X num_agg_z)
+    build_mean_phytoplankton(:, domain_loop, :)	= current_mean_phytoplankton; % phytoplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_domains X num_agg_z)
 %     build_mean_microzooplankton(:, domain_loop, :)	= current_mean_microzooplankton; % microzooplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_domains X num_agg_z)
 %     build_mean_mesozooplankton(:, domain_loop, :)   = current_mean_mesozooplankton; % mesozooplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_domains X num_agg_z)
 %     build_mean_Pzooplankton(:, domain_loop, :)      = current_mean_Pzooplankton; % Pzooplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_domains X num_agg_z)
@@ -1597,6 +1635,7 @@ ROMS_temperature        = zeros(num_t_ROMS, num_boxes); % temperature time-serie
 % ROMS_PON                = zeros(num_t_ROMS, num_boxes); % PON time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
 ROMS_diatom             = zeros(num_t_ROMS, num_boxes); % diatom time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
 ROMS_nanophytoplankton	= zeros(num_t_ROMS, num_boxes); % nanophytoplankton time-series (mmole N/m3; (2D matrix: num_t_ROMS X num_boxes)
+ROMS_phytoplankton	= zeros(num_t_ROMS, num_boxes); % phytoplankton time-series (mmole N/m3; (2D matrix: num_t_ROMS X num_boxes)
 % ROMS_microzooplankton	= zeros(num_t_ROMS, num_boxes); % microzooplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
 % ROMS_mesozooplankton	= zeros(num_t_ROMS, num_boxes); % mesozooplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
 % ROMS_Pzooplankton      	= zeros(num_t_ROMS, num_boxes); % Pzooplankton time-series (dmmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
@@ -1615,6 +1654,7 @@ for depth_loop = 1:num_agg_z
 %     ROMS_PON(:, start_pointer:end_pointer)                  = build_mean_PON(:, :, depth_loop);
     ROMS_diatom(:, start_pointer:end_pointer)               = build_mean_diatom(:, :, depth_loop);
     ROMS_nanophytoplankton(:, start_pointer:end_pointer)	= build_mean_nanophytoplankton(:, :, depth_loop);
+    ROMS_phytoplankton(:, start_pointer:end_pointer)	= build_mean_phytoplankton(:, :, depth_loop);
 %     ROMS_microzooplankton(:, start_pointer:end_pointer)     = build_mean_microzooplankton(:, :, depth_loop);
 %     ROMS_mesozooplankton(:, start_pointer:end_pointer)      = build_mean_mesozooplankton(:, :, depth_loop);
 %     ROMS_Pzooplankton(:, start_pointer:end_pointer)         = build_mean_Pzooplankton(:, :, depth_loop);
@@ -1677,6 +1717,7 @@ ROMSflux.ROMS_temperature               = ROMS_temperature; % temperature time-s
 % ROMSflux.ROMS_PON                       = ROMS_PON; % PON time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
 ROMSflux.ROMS_diatom                    = ROMS_diatom; % diatom time-series (mmole N/m3; (2D matrix: num_t_ROMS X num_boxes)
 ROMSflux.ROMS_nanophytoplankton         = ROMS_nanophytoplankton; % nanophytoplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
+ROMSflux.ROMS_phytoplankton = ROMS_phytoplankton; % phytoplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
 % ROMSflux.ROMS_microzooplankton          = ROMS_microzooplankton; % microzooplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
 % ROMSflux.ROMS_mesozooplankton           = ROMS_mesozooplankton; % mesozooplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)
 % ROMSflux.ROMS_Pzooplankton              = ROMS_Pzooplankton; % Pzooplankton time-series (mmole N/m3); (2D matrix: num_t_ROMS X num_boxes)

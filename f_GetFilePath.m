@@ -20,16 +20,16 @@ function filePath = f_GetFilePath(key)
     % NOTE: COMMENT OUT EITHER UCSC OR LIVEOCEAN PATHS DEPENDING ON WHICH FILE TYPES YOU'RE USING
 
     % USCS paths
-    % ROMSdir = "/Volumes/QEDA_ARCHIVE/QEDA/NWFSC/ECOTRAN/fromJim";
-    % filePaths("wc12_gr") = fullfile(ROMSdir, "wc12_grd.nc");
-    % filePaths("depth_levels_trimmed") = fullfile(ROMSdir, "depth_levels_trimmed.nc");
-    % filePaths("wc12_avg_2005_trimmed") = fullfile(ROMSdir, "wc12_avg_gfdl_2005_trimmed.nc");
+    ROMSdir = "/Volumes/QEDA_ARCHIVE/QEDA/NWFSC/ECOTRAN/fromJim";
+    filePaths("wc12_gr") = fullfile(ROMSdir, "wc12_grd.nc");
+    filePaths("depth_levels_trimmed") = fullfile(ROMSdir, "depth_levels_trimmed.nc");
+    filePaths("wc12_avg_2005_trimmed") = fullfile(ROMSdir, "wc12_avg_gfdl_2005_trimmed.nc");
 
     % LiveOcean paths
-    ROMSdir = "/Volumes/QEDA_ARCHIVE/QEDA/NWFSC/ECOTRAN/LiveOcean";
-    filePaths("LiveOceanGrid") = fullfile(ROMSdir, "LiveOcean_2017.nc");
-    filePaths("LiveOceanMetrics") = fullfile(ROMSdir, "LiveOcean_2017_ROMSmetrics.mat");
-    filePaths("LiveOceanExampleYear") = fullfile(ROMSdir, "LiveOcean_2017.nc");
+    % ROMSdir = "/Volumes/QEDA_ARCHIVE/QEDA/NWFSC/ECOTRAN/LiveOcean";
+    % filePaths("LiveOceanGrid") = fullfile(ROMSdir, "LiveOcean_2017.nc");
+    % filePaths("LiveOceanMetrics") = fullfile(ROMSdir, "LiveOcean_2017_ROMSmetrics.mat");
+    % filePaths("LiveOceanExampleYear") = fullfile(ROMSdir, "LiveOcean_2017.nc");
     
     % END OF SECTION TO COMMENT/UNCOMMENT
 

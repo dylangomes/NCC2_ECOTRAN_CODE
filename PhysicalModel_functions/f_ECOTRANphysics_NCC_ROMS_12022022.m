@@ -44,129 +44,22 @@ function [ECOTRANphysics] = f_ECOTRANphysics_NCC_ROMS_12022022(PHYSICSinput)
 fname_PhysicalModel      = mfilename; % save name of this m-file to keep in saved model results
 display(['Running: ' fname_PhysicalModel])
 
-% files & directories
-
-% readFile_directory      = '/Users/jamesruzicka/Documents/10_ECOTRAN_code/7_NCC_code/NCC_physics/ROMS_Jacox/Hindcast_ROMS_data_1980-2010/'; % directory to ROMS time-series
-% filename_list           = {
-%         'wc12_avg_1980_trimmed.nc'
-%         'wc12_avg_1981_trimmed.nc'
-%         'wc12_avg_1982_trimmed.nc'
-%         'wc12_avg_1983_trimmed.nc'
-%         'wc12_avg_1984_trimmed.nc'
-%         'wc12_avg_1985_trimmed.nc'
-%         'wc12_avg_1986_trimmed.nc'
-%         'wc12_avg_1987_trimmed.nc'
-%         'wc12_avg_1988_trimmed.nc'
-%         'wc12_avg_1989_trimmed.nc'
-%         'wc12_avg_1990_trimmed.nc'
-%         'wc12_avg_1991_trimmed.nc'
-%         'wc12_avg_1992_trimmed.nc'
-%         'wc12_avg_1993_trimmed.nc'
-% %         'wc12_avg_1994_trimmed.nc' % microzooop read error
-% %         'wc12_avg_1995_trimmed.nc'
-% %         'wc12_avg_1996_trimmed.nc'
-% %         'wc12_avg_1997_trimmed.nc'
-% %         'wc12_avg_1998_trimmed.nc'
-% %         'wc12_avg_1999_trimmed.nc'
-% %         'wc12_avg_2000_trimmed.nc'
-% %         'wc12_avg_2001_trimmed.nc'
-% %         'wc12_avg_2002_trimmed.nc'
-% %         'wc12_avg_2003_trimmed.nc'
-% %         'wc12_avg_2004_trimmed.nc'
-% %         'wc12_avg_2005_trimmed.nc'
-% %         'wc12_avg_2006_trimmed.nc'
-% %         'wc12_avg_2007_trimmed.nc'
-% %         'wc12_avg_2008_trimmed.nc'
-% %         'wc12_avg_2009_trimmed.nc'
-% %         'wc12_avg_2010_trimmed.nc'
-%                             };
-
 % readFile_directory      = '/Users/jamesruzicka/Documents/10_ECOTRAN_code/7_NCC_code/NCC_physics/ROMS_Jacox/Forecast_ROMS_data_1980-2050/'; % directory to ROMS time-series
 readFile_directory      = f_GetFilePath("ROMSdir"); % directory to ROMS time-series
 
-filename_list           = {
-        'wc12_avg_gfdl_1980_trimmed.nc'
-        'wc12_avg_gfdl_1981_trimmed.nc'
-        'wc12_avg_gfdl_1982_trimmed.nc'
-        'wc12_avg_gfdl_1983_trimmed.nc'
-        'wc12_avg_gfdl_1984_trimmed.nc'
-        'wc12_avg_gfdl_1985_trimmed.nc'
-        'wc12_avg_gfdl_1986_trimmed.nc'
-        'wc12_avg_gfdl_1987_trimmed.nc'
-        'wc12_avg_gfdl_1988_trimmed.nc'
-        'wc12_avg_gfdl_1989_trimmed.nc'
-        'wc12_avg_gfdl_1990_trimmed.nc'
-        'wc12_avg_gfdl_1991_trimmed.nc'
-        'wc12_avg_gfdl_1992_trimmed.nc'
-        'wc12_avg_gfdl_1993_trimmed.nc'
-        'wc12_avg_gfdl_1994_trimmed.nc'
-        'wc12_avg_gfdl_1995_trimmed.nc'
-        'wc12_avg_gfdl_1996_trimmed.nc'
-        'wc12_avg_gfdl_1997_trimmed.nc'
-        'wc12_avg_gfdl_1998_trimmed.nc'
-        'wc12_avg_gfdl_1999_trimmed.nc'
-        'wc12_avg_gfdl_2000_trimmed.nc'
-        'wc12_avg_gfdl_2001_trimmed.nc'
-        'wc12_avg_gfdl_2002_trimmed.nc'
-        'wc12_avg_gfdl_2003_trimmed.nc'
-        'wc12_avg_gfdl_2004_trimmed.nc'
-        'wc12_avg_gfdl_2005_trimmed.nc'
-        'wc12_avg_gfdl_2006_trimmed.nc'
-        'wc12_avg_gfdl_2007_trimmed.nc'
-        'wc12_avg_gfdl_2008_trimmed.nc'
-        'wc12_avg_gfdl_2009_trimmed.nc'
-        'wc12_avg_gfdl_2010_trimmed.nc'
-        'wc12_avg_gfdl_2011_trimmed.nc'
-        'wc12_avg_gfdl_2012_trimmed.nc'
-        'wc12_avg_gfdl_2013_trimmed.nc'
-        'wc12_avg_gfdl_2014_trimmed.nc'
-        'wc12_avg_gfdl_2015_trimmed.nc'
-        'wc12_avg_gfdl_2016_trimmed.nc'
-        'wc12_avg_gfdl_2017_trimmed.nc'
-        'wc12_avg_gfdl_2018_trimmed.nc'
-        'wc12_avg_gfdl_2019_trimmed.nc'
-        'wc12_avg_gfdl_2020_trimmed.nc'
-        'wc12_avg_gfdl_2021_trimmed.nc'
-        'wc12_avg_gfdl_2022_trimmed.nc'
-        'wc12_avg_gfdl_2023_trimmed.nc'
-        'wc12_avg_gfdl_2024_trimmed.nc'
-        'wc12_avg_gfdl_2025_trimmed.nc'
-        'wc12_avg_gfdl_2026_trimmed.nc'
-        'wc12_avg_gfdl_2027_trimmed.nc'
-        'wc12_avg_gfdl_2028_trimmed.nc'
-        'wc12_avg_gfdl_2029_trimmed.nc'
-        'wc12_avg_gfdl_2030_trimmed.nc'
-        'wc12_avg_gfdl_2031_trimmed.nc'
-        'wc12_avg_gfdl_2032_trimmed.nc'
-        'wc12_avg_gfdl_2033_trimmed.nc'
-        'wc12_avg_gfdl_2034_trimmed.nc'
-        'wc12_avg_gfdl_2035_trimmed.nc'
-        'wc12_avg_gfdl_2036_trimmed.nc'
-        'wc12_avg_gfdl_2037_trimmed.nc'
-        'wc12_avg_gfdl_2038_trimmed.nc'
-        'wc12_avg_gfdl_2039_trimmed.nc'
-        'wc12_avg_gfdl_2040_trimmed.nc'
-        'wc12_avg_gfdl_2041_trimmed.nc'
-        'wc12_avg_gfdl_2042_trimmed.nc'
-        'wc12_avg_gfdl_2043_trimmed.nc'
-        'wc12_avg_gfdl_2044_trimmed.nc'
-        'wc12_avg_gfdl_2045_trimmed.nc'
-        'wc12_avg_gfdl_2046_trimmed.nc'
-        'wc12_avg_gfdl_2047_trimmed.nc'
-        'wc12_avg_gfdl_2048_trimmed.nc'
-        'wc12_avg_gfdl_2049_trimmed.nc'
-        'wc12_avg_gfdl_2050_trimmed.nc'
-};
+ROMStype = f_GetROMStype();
 
+years = 1980:2050;
+if strcmp(ROMStype, "UCSC")
+    filename_list = strcat('wc12_avg_gfdl_', cellstr(num2str(years(:), '%-i')), '_trimmed.nc');
+elseif strcmp(ROMStype, "LiveOcean")
+    filename_list = strcat('LiveOcean_', cellstr(num2str(years(:), '%-i')), '.nc');
+end
 
 % NutrientFile_directory     = '/Users/carenbarcelo/Documents/GitHub/ECOTRAN_NCC/4_Dynamic_code_cb/'; % directory: NH-Line nutrient climatology
 % NutrientFile_directory      = '/Users/jamesruzicka/Documents/10_ECOTRAN_code/7_NCC_code/NCC_physics/'; % directory: NH-Line nutrient climatology
 NutrientFile_directory      = f_GetFilePath("PhysicalModel_functions"); % directory: NH-Line nutrient climatology
 % -------------------------------------------------------------------------
-
-
-
-
 
 % step 1a: physical parameters --------------------------------------------
 latitude     = 44.6516667;              % latitude of NH line (decimal degress north) based on LTOP transects
@@ -219,7 +112,6 @@ W_to_microE               = 4.6;        % convert (W m^-2) to (microE m^-2 s^-1)
 
 % *************************************************************************
 % STEP 3: prepare ROMS grid------------------------------------------------
-ROMStype = f_GetROMStype();
 if strcmp(ROMStype, "UCSC")
     ROMSfiles = [f_GetFilePath("wc12_gr"), f_GetFilePath("depth_levels_trimmed"), f_GetFilePath("wc12_avg_2005_trimmed")];
 elseif strcmp(ROMStype, "LiveOcean")
@@ -261,7 +153,7 @@ end
 if ~foundMatch
     disp('Generating ROMSgrid');
     ROMSgrid = f_ROMS_GridPrep_NCC_11282022;
-    save(fullfile(f_GetFilePath("preproDir"), sprintf('ROMSgrid_%s.mat', string(datetime("now"), 'MM-dd-yyyy_HH-mm'))), "ROMSgridMetadata", "ROMSgrid");
+    save(fullfile(f_GetFilePath("preproDir"), sprintf('ROMSgrid_%s_%s.mat', ROMStype, string(datetime("now"), 'MM-dd-yyyy_HH-mm'))), "ROMSgridMetadata", "ROMSgrid");
 end
 
 num_boxes                   = ROMSgrid.num_boxes;

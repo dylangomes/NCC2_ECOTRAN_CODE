@@ -113,7 +113,11 @@ varid       = netcdf.inqVarID(ncid, 'lon_rho');
 lon_rho   	= netcdf.getVar(ncid, varid);       % 'longitude of RHO-points'; (2D matrix: rho longitude (51 west:east) X rho latitude (81 south:north))
 
 varid       = netcdf.inqVarID(ncid, 'w');
-w           = netcdf.getVar(ncid, varid);       % time-averaged vertical momentum component; (m/s); (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z+1 (43; s_w) X num_days)
+w           = netcdf.getVar(ncid, varid);        % time-averaged vertical momentum component; (m/s); (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z+1 (43; s_w) X num_days)
+
+% save(fullfile(f_GetFilePath("ROMSdir"), 'w.mat'), 'w', '-v7.3');
+% clear w;
+% fH_w = matfile(fullfile(f_GetFilePath("ROMSdir"), 'w.mat'), 'Writable', true);
 
 % varid       = netcdf.inqVarID(ncid, 'omega');
 % omega       = netcdf.getVar(ncid, varid);       % time-averaged S-coordinate vertical momentum component; (m/s); NOTE: comments say units are (m3/s), but this won't allow volume balance while (m/s) DOES WORK; (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z+1 (43; s_w) X num_days)
@@ -125,7 +129,6 @@ s_w         = netcdf.getVar(ncid, varid);       % 'S-coordinate at W-points'; (0
 
 varid       = netcdf.inqVarID(ncid, 'zeta');
 zeta      	= netcdf.getVar(ncid, varid);       % free surface at RHO-points; (m); (3D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_t_ROMS)
-
 
 % biological model variables
 varid               = netcdf.inqVarID(ncid, 'temp');
@@ -159,7 +162,6 @@ elseif strcmp(ROMStype, "LiveOcean")
     nanophytoplankton = phytoplankton.*0;
     diatom = phytoplankton.*0;
 end
-
 
 
 % varid               = netcdf.inqVarID(ncid, 'microzooplankton');
@@ -205,14 +207,9 @@ ocean_time	= netcdf.getVar(ncid, varid);       % seconds since 1900-01-01 00:00:
 netcdf.close(ncid)
 % -------------------------------------------------------------------------
 
-
 % step 2b: clear temporary variables --------------------------------------
 clear ncid varid
 % *************************************************************************
-
-
-
-
 
 % *************************************************************************
 % STEP 3: trim full grid ROMS terms to only those WITHIN the NCC ----------

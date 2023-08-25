@@ -84,15 +84,17 @@ elseif strcmp(ROMStype, "LiveOcean")
         47.15 46.05 -150 -250
         47.15 46.05 -250 -1500
 
+        % NOTE: latitudinal boundaries can't land exactly on a ROMS node, so we need to use
+        % 44.451 instead of 44.45
         % NOR
-        46.05 44.45 -15 -150
-        46.05 44.45 -150 -250
-        46.05 44.45 -250 -1500
+        46.05 44.451 -15 -150
+        46.05 44.451 -150 -250
+        46.05 44.451 -250 -1500
 
         % SOR
-        44.45 42.05 -15 -150
-        44.45 42.05 -150 -250
-        44.45 42.05 -250 -1500
+        44.451 42.05 -15 -150
+        44.451 42.05 -150 -250
+        44.451 42.05 -250 -1500
     ];
 end
                 
@@ -511,17 +513,17 @@ for domain_loop = 1:num_domains
 
     % step 5b: find North/South boundaries of current domian --------------
     % latitude domain in v
-    looky_north         = find(lat_v_trim(1, :) < current_north); % column address in lat_v at or south of northern bound; (horizontal vector: 1 X ???)
+    looky_north         = find(lat_v_trim(1, :) <= current_north); % column address in lat_v at or south of northern bound; (horizontal vector: 1 X ???)
     looky_south     	= find(lat_v_trim(1, :) >= current_south); % column address in lat_v at or north of southern bound; (horizontal vector: 1 X ???)
     grid_addresses_v(domain_loop, south:north)	= [min(looky_south), max(looky_north)]; % [south north west east];
     
     % latitude domain in u (rho & u latitudes should be the same)
-    looky_north         = find(lat_u_trim(1, :) < current_north); % column address at or south of northern bound; (horizontal vector: 1 X ???)
+    looky_north         = find(lat_u_trim(1, :) <= current_north); % column address at or south of northern bound; (horizontal vector: 1 X ???)
     looky_south         = find(lat_u_trim(1, :) >= current_south); % column address at or north of southern bound; (horizontal vector: 1 X ???)
     grid_addresses_u(domain_loop, south:north) = [min(looky_south) max(looky_north)]; % [south north west east];
     
     % latitude domain in rho (rho & u latitudes should be the same)
-    looky_north         = find(lat_rho_trim(1, :) < current_north); % column address at or south of northern bound; (horizontal vector: 1 X ???)
+    looky_north         = find(lat_rho_trim(1, :) <= current_north); % column address at or south of northern bound; (horizontal vector: 1 X ???)
     looky_south         = find(lat_rho_trim(1, :) >= current_south); % column address at or north of southern bound; (horizontal vector: 1 X ???)
     grid_addresses_rho(domain_loop, south:north) = [min(looky_south) max(looky_north)]; % [south north west east ? ?];
     % ---------------------------------------------------------------------
@@ -532,7 +534,7 @@ for domain_loop = 1:num_domains
     current_latBand_h           = h_trim(:, current_addresses_rho(south):current_addresses_rho(north)); % (2D matrix: rows_rho X (num ROMS cells in lat zone)); top row = west, bottom row = east;
     
     median_h                    = median(current_latBand_h, 2) * (-1); % median bathymetry along each longitude band within the current latitude zone; (vertical vector: rows_h X 1); NOTE: median seems to work better for NCC than mean or mode (reduces on land cells)
-    looky_east                  = find(median_h < current_shallow); % (vertical vector: number_of_qualifying_deep_depths X 1);
+    looky_east                  = find(median_h <= current_shallow); % (vertical vector: number_of_qualifying_deep_depths X 1);
     looky_west                  = find(median_h >= current_deep); % (vertical vector: number_of_qualifying_shallow_depths X 1);
     
     grid_addresses_rho(domain_loop, west:east) = [min(looky_west), max(looky_east)]; % (rho & v longitudes should be the same)
@@ -541,12 +543,12 @@ for domain_loop = 1:num_domains
     current_east_rho            = lon_rho_trim(grid_addresses_rho(domain_loop, east)); % longitudes; (scalar)
 
 	% longitude domain in v (rho & v longitudes should be the same)
-    looky_east                  = find(lon_v_trim(:, 1) < current_east_rho); % column address at or south of northern bound; (horizontal vector: 1 X ???); NOTE: DON'T need to add +1 to this since rho and v lie along the same longitudes
+    looky_east                  = find(lon_v_trim(:, 1) <= current_east_rho); % column address at or south of northern bound; (horizontal vector: 1 X ???); NOTE: DON'T need to add +1 to this since rho and v lie along the same longitudes
     looky_west                  = find(lon_v_trim(:, 1) >= current_west_rho); % column address at or south of northern bound; (horizontal vector: 1 X ???); NOTE: DON'T need to subtract -1 to this since rho and v lie along the same longitudes
     grid_addresses_v(domain_loop, west:east)	= [min(looky_west), max(looky_east)]; % [south north west east]
 
 	% longitude domain in u
-    looky_east                  = find(lon_u_trim(:, 1) < current_east_rho); % column address at or south of northern bound; (horizontal vector: 1 X ???) NOTE: need to add +1 to this since rho are internal points of boxes
+    looky_east                  = find(lon_u_trim(:, 1) <= current_east_rho); % column address at or south of northern bound; (horizontal vector: 1 X ???) NOTE: need to add +1 to this since rho are internal points of boxes
     looky_west                  = find(lon_u_trim(:, 1) >= current_west_rho); % column address at or south of northern bound; (horizontal vector: 1 X ???) NOTE: need to subtract -1 to this since rho are internal points of boxes
     grid_addresses_u(domain_loop, west:east) = [min(looky_west)-1, max(looky_east)+1]; % [south north west east]
 	% ---------------------------------------------------------------------

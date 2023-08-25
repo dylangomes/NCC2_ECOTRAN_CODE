@@ -70,7 +70,6 @@ function f_ECOTRANdynamic_NCC2_PARALLEL_08032023(setWD, Model_name, START,END, R
 % revison date: 5/15/2023
 %       5/15/2023  revised ECOTRAN_DynamicCode_Parallel_NCC2_02172023; functionalized; cleaned up code indentation and STEP numbering
 
-
 % *************************************************************************
 % Set up for batch processing using settings from ECOTRANdynamic_NCC2_TEMPLATE_12082022
 CHANGEGROUP                             = run_Treatments(1);
@@ -920,6 +919,7 @@ switch switch_ExternalDriver
         % use to define external forcing rate time-series
         %   NOTE: use for 3D ROMS-BGC settings
 
+        ROMStype = f_GetROMStype();
         if strcmp(ROMStype, "UCSC")
             looky_externalForcing               = [looky_lrgPhyto looky_smlPhyto]; % identify externalForcing driver group(s);	% row address(es) of externally forced input group(s) (e.g., NO3, phytoplankton, juvenile salmon)
         elseif strcmp(ROMStype, "LiveOcean")
@@ -931,7 +931,7 @@ switch switch_ExternalDriver
         ROMS_diatom                         = ROMS_diatom            .* (qb(looky_lrgPhyto) / 365); % convert to q rate; (mmole N/m3/d); (2D matrix: num_t X num_boxes)
         ROMS_nanophytoplankton            	= ROMS_nanophytoplankton .* (qb(looky_smlPhyto) / 365); % convert to q rate; (mmole N/m3/d); (2D matrix: num_t X num_boxes)
         disp('dwj: Need to verify that we can use looky_phytoplankton here');
-        ROMS_phytoplankton            	= ROMS_phytoplankton .* (qb(looky_phytoplankton) / 365); % convert to q rate; (mmole N/m3/d); (2D matrix: num_t X num_boxes)
+        ROMS_phytoplankton            	= ROMS_phytoplankton .* ((qb(looky_phytoplankton(1)) + qb(looky_phytoplankton(2))) / 365); % convert to q rate; (mmole N/m3/d); (2D matrix: num_t X num_boxes)
 
         ROMS_diatom                         = reshape(ROMS_diatom,            [num_t, 1, num_boxes]);	% (mmole N/m3/d); (3D matrix: num_t X 1 X num_boxes)
         ROMS_nanophytoplankton            	= reshape(ROMS_nanophytoplankton, [num_t, 1, num_boxes]);	% (mmole N/m3/d); (3D matrix: num_t X 1 X num_boxes)

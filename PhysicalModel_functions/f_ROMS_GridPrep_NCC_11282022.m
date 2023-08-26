@@ -74,27 +74,27 @@ if strcmp(ROMStype, "UCSC")
                 ]; % [north(lat) south(lat) east(inshore depth) west(offshore depth)]
 elseif strcmp(ROMStype, "LiveOcean")
     domain_definition = [
+        % NOTE: latitudinal boundaries must lie exactly on a lat_v node in order for neighborhood 
+        % detection to work properly for latitudinal fluxes
         % WA
-        47.55 47.15 -15 -150 
-        47.55 47.15 -150 -250
-        47.55 47.15 -250 -1500
+        47.55 47.154 -15 -150 
+        47.55 47.154 -150 -250
+        47.55 47.154 -250 -1500
 
         % CR
-        47.15 46.05 -15 -150
-        47.15 46.05 -150 -250
-        47.15 46.05 -250 -1500
+        47.154 46.05 -15 -150
+        47.154 46.05 -150 -250
+        47.154 46.05 -250 -1500
 
-        % NOTE: latitudinal boundaries can't land exactly on a ROMS node, so we need to use
-        % 44.451 instead of 44.45
         % NOR
-        46.05 44.451 -15 -150
-        46.05 44.451 -150 -250
-        46.05 44.451 -250 -1500
+        46.05 44.454 -15 -150
+        46.05 44.454 -150 -250
+        46.05 44.454 -250 -1500
 
         % SOR
-        44.451 42.05 -15 -150
-        44.451 42.05 -150 -250
-        44.451 42.05 -250 -1500
+        44.454 42.05 -15 -150
+        44.454 42.05 -150 -250
+        44.454 42.05 -250 -1500
     ];
 end
                 

@@ -239,7 +239,37 @@ for year_loop = 1:num_years
     % Generate ROMSflux if we haven't found a matching pre-processed data file
     if ~foundMatch
         disp('Generating ROMSflux');
-        ROMSflux = f_ROMS_FluxPrep_NCC_11302022(ROMSgrid, readFile_FluxYear); % NOTE: this code will provide compacted fluxes for the current ROMS year, but compaction step will be repeated AFTER all ROMS years are stacked
+        numDay = 10;
+        startDays = 1:numDay:365;
+        for startDay = startDays
+            thisNumDay = min(numDay, 365-startDay+1);
+            thisROMSflux = f_ROMS_FluxPrep_NCC_11302022(ROMSgrid, readFile_FluxYear, startDay, thisNumDay); % NOTE: this code will provide compacted fluxes for the current ROMS year, but compaction step will be repeated AFTER all ROMS years are stacked
+
+            if startDay==1
+                ROMSflux = thisROMSflux;
+            else
+                ROMSflux.ocean_time = [ROMSflux.ocean_time; thisROMSflux.ocean_time];
+                ROMSflux.num_t_ROMS = ROMSflux.num_t_ROMS + thisROMSflux.num_t_ROMS;
+                ROMSflux.BoxVolume = [ROMSflux.BoxVolume; thisROMSflux.BoxVolume];
+                ROMSflux.ADVECTION = cat(1, ROMSflux.ADVECTION, thisROMSflux.ADVECTION);
+                ROMSflux.HORIZONTALMIXING = cat(1, ROMSflux.HORIZONTALMIXING, thisROMSflux.HORIZONTALMIXING);
+                ROMSflux.VERTICALMIXING = cat(1, ROMSflux.VERTICALMIXING, thisROMSflux.VERTICALMIXING);
+                ROMSflux.SINKING = cat(1, ROMSflux.SINKING, thisROMSflux.SINKING);
+                ROMSflux.ROMS_temperature = cat(1, ROMSflux.ROMS_temperature, thisROMSflux.ROMS_temperature);
+                ROMSflux.ROMS_diatom = cat(1, ROMSflux.ROMS_diatom, thisROMSflux.ROMS_diatom);
+                ROMSflux.ROMS_nanophytoplankton = cat(1, ROMSflux.ROMS_nanophytoplankton, thisROMSflux.ROMS_nanophytoplankton);
+                ROMSflux.ROMS_phytoplankton = cat(1, ROMSflux.ROMS_phytoplankton, thisROMSflux.ROMS_phytoplankton);
+
+                % Note: As mentioned below, this assumes that all the flux error occurs in a single ROMS depth. If not, error_record will be 4D and this code will need to be adjusted.
+                ROMSflux.error_record = cat(3, ROMSflux.error_record, thisROMSflux.error_record);
+            end
+        end
+
+        ROMSflux.CompactFlux_ADVECTION = f_CompactFluxTimeSeries_11182019(ROMSflux.ADVECTION);
+        ROMSflux.CompactFlux_HORIZONTALMIXING = f_CompactFluxTimeSeries_11182019(ROMSflux.HORIZONTALMIXING);
+        ROMSflux.CompactFlux_VERTICALMIXING = f_CompactFluxTimeSeries_11182019(ROMSflux.VERTICALMIXING);
+        ROMSflux.CompactFlux_SINKING = f_CompactFluxTimeSeries_11182019(ROMSflux.SINKING);
+        
         save(fullfile(f_GetFilePath('preproDir'), sprintf('ROMSflux_%d_%s.mat', current_year, string(datetime('now'), 'MM-dd-yyyy_HH-mm'))), "ROMSfluxMetadata", "ROMSflux");
     end
 

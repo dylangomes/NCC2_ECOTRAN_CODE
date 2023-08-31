@@ -175,6 +175,23 @@ z_w = f_ReadROMSvar("z_w"); % 'depth of w points'; (m); (2D matrix: 186 X 181 X 
 lat_rho_flow = f_ReadROMSvar("lat_rho_flow"); % 'latitude of RHO-points'; (2D matrix: rho longitude (51 west:east) X rho latitude (81 south:north))
 lon_rho_flow = f_ReadROMSvar("lon_rho_flow"); % 'longitude of RHO-points'; (2D matrix: rho longitude (51 west:east) X rho latitude (81 south:north))
 % -------------------------------------------------------------------------
+
+% LiveOcean ROMS files have NaN in z matrices where there is land; UCSC matrices have values of 10 or less
+% => need to fill in NaNs for code to work properly. Used 4 since that's what's in h.
+[r, c, numLevel] = size(z_rho);
+for level=1:numLevel
+    thisZ_rho = z_rho(:, :, level);
+    thisZ_rho(isnan(thisZ_rho)) = h(isnan(thisZ_rho)).*(1-(level-1)/(numLevel-1));
+    z_rho(:, :, level) = thisZ_rho;
+end
+
+[r, c, numLevel] = size(z_w);
+for level=1:numLevel
+    thisZ_w = z_w(:, :, level);
+    thisZ_w(isnan(thisZ_w)) = h(isnan(thisZ_w)).*(1-(level-1)/(numLevel-1));
+    z_w(:, :, level) = thisZ_w;
+end
+
 % *************************************************************************
 
 % *************************************************************************

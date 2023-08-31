@@ -269,8 +269,8 @@ for year_loop = 1:num_years
         ROMSflux.CompactFlux_HORIZONTALMIXING = f_CompactFluxTimeSeries_11182019(ROMSflux.HORIZONTALMIXING);
         ROMSflux.CompactFlux_VERTICALMIXING = f_CompactFluxTimeSeries_11182019(ROMSflux.VERTICALMIXING);
         ROMSflux.CompactFlux_SINKING = f_CompactFluxTimeSeries_11182019(ROMSflux.SINKING);
-        
-        save(fullfile(f_GetFilePath('preproDir'), sprintf('ROMSflux_%d_%s.mat', current_year, string(datetime('now'), 'MM-dd-yyyy_HH-mm'))), "ROMSfluxMetadata", "ROMSflux");
+
+        save(fullfile(f_GetFilePath('preproDir'), sprintf('ROMSflux_%d_%s_%s.mat', current_year, ROMStype, string(datetime('now'), 'MM-dd-yyyy_HH-mm'))), "ROMSfluxMetadata", "ROMSflux");
     end
 
     current_num_t_ROMS	= ROMSflux.num_t_ROMS; % number of ROMS time-points in current year

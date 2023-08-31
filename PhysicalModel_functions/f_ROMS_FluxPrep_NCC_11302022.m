@@ -205,10 +205,6 @@ u           = netcdf.getVar(ncid, varid, [0, 0, 0, startDay-1], [varSize(1), var
 varid       = netcdf.inqVarID(ncid, 'hc');
 hc          = netcdf.getVar(ncid, varid);       % 'S-coordinate parameter, critical depth'; (m); scalar
 
-varid       = netcdf.inqVarID(ncid, 'ocean_time');
-varSize = ncinfo(readFile_FluxYear, 'ocean_time').Size;
-ocean_time	= netcdf.getVar(ncid, varid, [startDay-1], [numDay]);       % seconds since 1900-01-01 00:00:00; (vertical vector: 366 X 1)
-
 % variables NOT loaded
 %         Cs_w      'S-coordinate stretching curves at W-points'; (-1 to 0); (vertical vector: 43 X 1)
 %         Cs_r      'S-coordinate stretching curves at rho-points'; (-1 to 0); (vertical vector: 42 X 1)
@@ -217,9 +213,28 @@ ocean_time	= netcdf.getVar(ncid, varid, [startDay-1], [numDay]);       % seconds
 %         Akp_bak   'background vertical mixing coefficient for length scale'; (m2/s); (scalar)
 %         Akk_bak   'background vertical mixing coefficient for turbulent energy'; (m2/s); (scalar)
 
+% Different ROMS files have different basis times for ocean_time, and some are in terms of "days since" basis time 
+% and others are in terms of "seconds since" basis time. However, all of the code currently assumes a daily time step,
+% so the easiest option will be to build our own ocean_time variable which is number of seconds since Jan. 1, 1990
+ROMS_refTime_matlab     = datenum([1900, 1, 1, 0, 0, 0]);
+
+% Read the ocean_time basis
+vinfo = ncinfo(readFile_FluxYear, 'ocean_time').Attributes;
+unitsIndex = find(cellfun(@(x)isequal(x, 'units'), {vinfo.Name}));
+units = vinfo(unitsIndex).Value;
+out = regexp(units, '\d{4}-\d{2}-\d{2}', 'match');
+yearMonthDay = strsplit(out{1}, '-');
+thisRefTime = datenum([str2double(yearMonthDay{1}), str2double(yearMonthDay{2}), str2double(yearMonthDay{3}), 0, 0, 0]);
+
+thisDdays = (startDay-1):(startDay-1+numDay-1);
+ocean_time_days = (thisRefTime - ROMS_refTime_matlab) + thisDdays;
+ocean_time = ocean_time_days*24*60*60;
+ocean_time = ocean_time';
+
 % Close the NetCDF file
 netcdf.close(ncid)
 % -------------------------------------------------------------------------
+
 
 % step 2b: clear temporary variables --------------------------------------
 clear ncid varid
@@ -1088,7 +1103,8 @@ locate_error_depth          = squeeze(max(abs(locate_error_depth)));
 locate_error_depth          = max(locate_error_depth, [], 2);
 looky_error_depth           = find(locate_error_depth > 0);
 
-error_record = [];
+% Note: as elsewhere in the code, this assumes that error is restricted to 1 depth layer only
+error_record = zeros(num_domains, 2, num_t_ROMS);
 for depth_loop = 1:length(looky_error_depth)
     
     current_depth = looky_error_depth(depth_loop);

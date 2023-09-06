@@ -941,7 +941,9 @@ switch switch_ExternalDriver
             externalForcing(:, 1, :)            = ROMS_diatom; % forced external input; (mmole N/m3/d); (3D matrix: num_t X num_externalForcing_grps X num_boxes)
             externalForcing(:, 2, :)            = ROMS_nanophytoplankton; % forced external input; (mmole N/m3/d); (3D matrix: num_t X num_externalForcing_grps X num_boxes)
         elseif strcmp(ROMStype, "LiveOcean")
-            externalForcing(:, 1, :)            = ROMS_phytoplankton; % forced external input; (mmole N/m3/d); (3D matrix: num_t X num_externalForcing_grps X num_boxes)
+            disp('dwj: Need to decide how to use ROMS_phytoplankton for external forcing. For now, just split phytoplankton 50:50 between diatoms and nanophytoplankton.');
+            externalForcing(:, 1, :)            = ROMS_phytoplankton/2; % forced external input; (mmole N/m3/d); (3D matrix: num_t X num_externalForcing_grps X num_boxes)
+            externalForcing(:, 2, :)            = ROMS_phytoplankton/2; % forced external input; (mmole N/m3/d); (3D matrix: num_t X num_externalForcing_grps X num_boxes)
         end
 
         % deactivate nutrient uptake by phytoplankton when driving model with BGC model output
@@ -1678,7 +1680,9 @@ for MonteCarlo_loop = 1:num_MC
                 production_initial_driver(1, looky_lrgPhyto, :)    	= mean(externalForcing(:, 1, :), 1);	% plug in mean ROMS_diatom input rate; average over entire time-series; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
                 production_initial_driver(1, looky_smlPhyto, :)     	= mean(externalForcing(:, 2, :), 1);	% plug in mean ROMS_nanophytoplankton input rate; average over entire time-series; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
             elseif strcmp(ROMStype, "LiveOcean")
-                production_initial_driver(1, looky_phytoplankton, :) = mean(externalForcing(:, 1, :), 1); % plug in mean ROMS_phytoplankton input rate; average over entire time-series; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
+                disp('dwj: Need to update this when we decide how to use ROMS_phytoplankton as an external driver');
+                production_initial_driver(1, looky_phytoplankton(1), :) = mean(externalForcing(:, 1, :), 1); % plug in mean ROMS_phytoplankton/2 input rate; average over entire time-series; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
+                production_initial_driver(1, looky_phytoplankton(2), :) = mean(externalForcing(:, 2, :), 1); % plug in mean ROMS_phytoplankton/2 input rate; average over entire time-series; (mmole N/m3/d); (3D matrix: 1 X num_grps X num_boxes)
             end
 
             % finalize initial condition calculations

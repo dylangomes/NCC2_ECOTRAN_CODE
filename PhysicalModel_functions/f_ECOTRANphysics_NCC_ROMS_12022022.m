@@ -468,6 +468,14 @@ MLD                         = (cos(((t_grid/365)*pi)*2) * (rangeMLD * 0.5) + (mi
 %       The structure "calcur" has 15 entries: one for each model box and variable.
 % step 7a: load "calcur" --------------------------------------------------
 readNutrientFile           = 'calcur_res.mat'; % monthly mean nutrients
+
+% Determine number of latitude bands
+ROMStype = f_GetROMStype();
+if strcmp(ROMStype, 'UCSC')
+    numLatBands = 5;
+elseif strcmp(ROMStype, 'LiveOcean')
+    numLatBands = 4;
+end
 readNutrientFile           = fullfile(NutrientFile_directory, readNutrientFile);
 load(readNutrientFile, 'calcur')
 looky_NO3                   = find([calcur.model_box]==1 & [calcur.var] == 3);
@@ -486,10 +494,10 @@ box_V_NO3                   = calcur(looky_NO3).monthly_mean;
 % QQQ build a dummy set of NO3 time-series for testing
 % QQQ epipelagic cross-shelf to match original box_I_NO3' box_II_NO3' box_IV_NO3'
 dat_NO3_epipelagic	= [box_I_NO3' box_II_NO3' box_IV_NO3'];
-dat_NO3_epipelagic	= repmat(dat_NO3_epipelagic, [1 (5*1)]); % 5 latitude bands and 1 epipelagic layer in test
+dat_NO3_epipelagic	= repmat(dat_NO3_epipelagic, [1 (numLatBands*1)]); % numLatBands latitude bands and 1 epipelagic layer in test
 % QQQ deep cross-shelf to match original box_I_NO3' box_III_NO3' box_V_NO3'
 dat_NO3_deep        = [box_I_NO3' box_III_NO3' box_V_NO3'];
-dat_NO3_deep        = repmat(dat_NO3_deep, [1 (5*3)]); % 5 latitude bands and 3 deep layers in test
+dat_NO3_deep        = repmat(dat_NO3_deep, [1 (numLatBands*3)]); % numLatBands latitude bands and 3 deep layers in test
 dat_NO3             = [dat_NO3_epipelagic dat_NO3_deep]; % monthly mean NO3 + NO2 concentration; (mmole N/m3); (2D matrix: month (12) X num_boxes)
 
 dat_NH4             = zeros(12, num_boxes); % QQQ made up for testing; monthly mean NH4 concentration; (mmole N/m3); (2D matrix: month (12) X num_boxes)

@@ -74,8 +74,13 @@ if strcmp(ROMStype, "UCSC")
                 ]; % [north(lat) south(lat) east(inshore depth) west(offshore depth)]
 elseif strcmp(ROMStype, "LiveOcean")
     domain_definition = [
-        % NOTE: latitudinal boundaries must lie exactly on a lat_v node in order for neighborhood 
+        % NOTE: latitudinal boundaries must lie exactly on a lat_v node in order sfor neighborhood 
         % detection to work properly for latitudinal fluxes
+        % Vancouver Island
+        % 51.98 47.55 -15 -150 
+        % 51.98 47.55 -150 -250
+        % 51.98 47.55 -250 -1500
+
         % WA
         47.55 47.154 -15 -150 
         47.55 47.154 -150 -250

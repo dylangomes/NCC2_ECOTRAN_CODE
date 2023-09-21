@@ -29,7 +29,7 @@ function filePath = f_GetFilePath(key)
     ROMSdir = "/Volumes/QEDA_ARCHIVE/QEDA/NWFSC/ECOTRAN/LiveOcean";
     filePaths("LiveOceanGrid") = fullfile(ROMSdir, "LiveOcean_2017_grid.nc");
     filePaths("LiveOceanMetrics") = fullfile(ROMSdir, "LiveOcean_2017_ROMSmetrics.mat");
-    filePaths("LiveOceanExampleYear") = fullfile(ROMSdir, "LiveOcean_2018.nc");
+    filePaths("LiveOceanExampleYear") = fullfile(ROMSdir, "LiveOcean_2018_phytoplankton.nc");
     % 
     % END OF SECTION TO COMMENT/UNCOMMENT
 

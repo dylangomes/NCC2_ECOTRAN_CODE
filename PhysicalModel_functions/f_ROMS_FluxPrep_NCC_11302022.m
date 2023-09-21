@@ -113,34 +113,48 @@ northeast	= 8;
 % *************************************************************************
 % STEP 2: load ROMS variables from NetCDF files----------------------------
 % step 2a: load ROMS NCC flow variables -----------------------------------
-ncid        = netcdf.open(readFile_FluxYear, 'NC_NOWRITE'); % Open readFile
 
 % values at rho-points (cell centers)
+ncid = netcdf.open(f_GetROMSfilename('lat_rho', readFile_FluxYear), 'NC_NOWRITE');
 varid       = netcdf.inqVarID(ncid, 'lat_rho'); % Get variable ID of the first variable, given its name
 lat_rho  	= netcdf.getVar(ncid, varid);       % 'latitude of RHO-points'; (2D matrix: rho longitude (51 west:east) X rho latitude (81 south:north))
+netcdf.close(ncid);
+
+ncid = netcdf.open(f_GetROMSfilename('lon_rho', readFile_FluxYear), 'NC_NOWRITE');
 varid       = netcdf.inqVarID(ncid, 'lon_rho'); 
 lon_rho   	= netcdf.getVar(ncid, varid);       % 'longitude of RHO-points'; (2D matrix: rho longitude (51 west:east) X rho latitude (81 south:north))
+netcdf.close(ncid);
 
-varid       = netcdf.inqVarID(ncid, 'w');
-varSize = ncinfo(readFile_FluxYear, 'w').Size;
+ncid = netcdf.open(f_GetROMSfilename('w', readFile_FluxYear), 'NC_NOWRITE');
+varid = netcdf.inqVarID(ncid, 'w');
+varSize = ncinfo(f_GetROMSfilename('w', readFile_FluxYear), 'w').Size;
 w = netcdf.getVar(ncid, varid, [0, 0, 0, startDay-1], [varSize(1), varSize(2), varSize(3), numDay]);        % time-averaged vertical momentum component; (m/s); (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z+1 (43; s_w) X num_days)
+netcdf.close(ncid);
 
 % varid       = netcdf.inqVarID(ncid, 'omega');
 % omega       = netcdf.getVar(ncid, varid);       % time-averaged S-coordinate vertical momentum component; (m/s); NOTE: comments say units are (m3/s), but this won't allow volume balance while (m/s) DOES WORK; (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z+1 (43; s_w) X num_days)
-
+ncid = netcdf.open(f_GetROMSfilename('s_rho', readFile_FluxYear), 'NC_NOWRITE');
 varid       = netcdf.inqVarID(ncid, 's_rho');
 s_rho       = netcdf.getVar(ncid, varid);       % 'S-coordinate at RHO-points'; (0 to -1; up is towards 0); (vertical vector: num_z (42; s_rho) X 1);
+netcdf.close(ncid);
+
+ncid = netcdf.open(f_GetROMSfilename('s_w', readFile_FluxYear), 'NC_NOWRITE');
 varid       = netcdf.inqVarID(ncid, 's_w');
 s_w         = netcdf.getVar(ncid, varid);       % 'S-coordinate at W-points'; (0 to -1; up is "+"; up is towards 0); (vertical vector: num_z+1 (43; s_w) X 1);
+netcdf.close(ncid);
 
+ncid = netcdf.open(f_GetROMSfilename('zeta', readFile_FluxYear), 'NC_NOWRITE');
 varid       = netcdf.inqVarID(ncid, 'zeta');
-varSize = ncinfo(readFile_FluxYear, 'zeta').Size;
+varSize = ncinfo(f_GetROMSfilename('zeta', readFile_FluxYear), 'zeta').Size;
 zeta = netcdf.getVar(ncid, varid, [0, 0, startDay-1], [varSize(1), varSize(2), numDay]);       % free surface at RHO-points; (m); (3D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_t_ROMS)
+netcdf.close(ncid);
 
 % biological model variables
+ncid = netcdf.open(f_GetROMSfilename('temp', readFile_FluxYear), 'NC_NOWRITE');
 varid               = netcdf.inqVarID(ncid, 'temp');
-varSize = ncinfo(readFile_FluxYear, 'temp').Size;
+varSize = ncinfo(f_GetROMSfilename('temp', readFile_FluxYear), 'temp').Size;
 temperature = netcdf.getVar(ncid, varid, [0, 0, 0, startDay-1], [varSize(1), varSize(2), varSize(3), numDay]);       % potential temperature; (Celsius); (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z (42; s_rho) X num_days)
+netcdf.close(ncid);
 
 % varid               = netcdf.inqVarID(ncid, 'NH4');
 % NH4                 = netcdf.getVar(ncid, varid); % time-averaged dissolved ammonium concentration; (millimole N /m3); % (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z (42; s_rho) X num_days)
@@ -155,19 +169,26 @@ temperature = netcdf.getVar(ncid, varid, [0, 0, 0, startDay-1], [varSize(1), var
 ROMStype = f_GetROMStype();
 
 if strcmp(ROMStype, "UCSC")
+    ncid = netcdf.open(f_GetROMSfilename('nanophytoplankton', readFile_FluxYear), 'NC_NOWRITE');
     varid               = netcdf.inqVarID(ncid, 'nanophytoplankton');
-    varSize = ncinfo(readFile_FluxYear, 'nanophytoplankton').Size;
+    varSize = ncinfo(f_GetROMSfilename('nanophytoplankton', readFile_FluxYear), 'nanophytoplankton').Size;
     nanophytoplankton	= netcdf.getVar(ncid, varid, [0, 0, 0, startDay-1], [varSize(1), varSize(2), varSize(3), numDay]); % time-averaged nanophytoplankton biomass; (millimole N /m3); % (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z (42; s_rho) X num_days)
+    netcdf.close(ncid);
+
+    ncid = netcdf.open(f_GetROMSfilename('diatom', readFile_FluxYear), 'NC_NOWRITE');
     varid               = netcdf.inqVarID(ncid, 'diatom');
-    varSize = ncinfo(readFile_FluxYear, 'nanophytoplankton').Size;
+    varSize = ncinfo(f_GetROMSfilename('diatom', readFile_FluxYear), 'diatom').Size;
     diatom              = netcdf.getVar(ncid, varid, [0, 0, 0, startDay-1], [varSize(1), varSize(2), varSize(3), numDay]); % time-averaged diatom biomass; (millimole N /m3); % (4D matrix: rho longitude (51 west:east) X rho latitude (81 south:north) X num_z (42; s_rho) X num_days)
+    netcdf.close(ncid);
 
     % Placeholder for phytoplankton
     phytoplankton = nanophytoplankton.*0;
 elseif strcmp(ROMStype, "LiveOcean")
+    ncid = netcdf.open(f_GetROMSfilename('phytoplankton', readFile_FluxYear), 'NC_NOWRITE');
     varid = netcdf.inqVarID(ncid, 'phytoplankton');
-    varSize = ncinfo(readFile_FluxYear, 'phytoplankton').Size;
+    varSize = ncinfo(f_GetROMSfilename('phytoplankton', readFile_FluxYear), 'phytoplankton').Size;
     phytoplankton = netcdf.getVar(ncid, varid, [0, 0, 0, startDay-1], [varSize(1), varSize(2), varSize(3), numDay]);
+    netcdf.close(ncid);
 
     % Placeholders for nanophytoplankton and diatom
     nanophytoplankton = phytoplankton.*0;
@@ -184,26 +205,44 @@ end
 
 
 % values at v-points (cell N/S boundaries)
+ncid = netcdf.open(f_GetROMSfilename('lat_v', readFile_FluxYear), 'NC_NOWRITE');
 varid       = netcdf.inqVarID(ncid, 'lat_v');
 lat_v       = netcdf.getVar(ncid, varid);       % 'latitude of V-points'; (2D matrix: v longitude (51 west:east) X v latitude (80 south:north));
+netcdf.close(ncid);
+
+ncid = netcdf.open(f_GetROMSfilename('lon_v', readFile_FluxYear), 'NC_NOWRITE');
 varid       = netcdf.inqVarID(ncid, 'lon_v');
 lon_v       = netcdf.getVar(ncid, varid);       % 'longitude of V-points'; (2D matrix: v longitude (51 west:east) X v latitude (80 south:north));
+netcdf.close(ncid);
+
+ncid = netcdf.open(f_GetROMSfilename('v', readFile_FluxYear), 'NC_NOWRITE');
 varid       = netcdf.inqVarID(ncid, 'v');
-varSize = ncinfo(readFile_FluxYear, 'v').Size;
+varSize = ncinfo(f_GetROMSfilename('v', readFile_FluxYear), 'v').Size;
 v           = netcdf.getVar(ncid, varid, [0, 0, 0, startDay-1], [varSize(1), varSize(2), varSize(3), numDay]);       % time-averaged v-momentum component; (m/s); (4D matrix: v longitude (51 west:east) X v latitude (80 south:north) X num_z (42; s_rho) X num_days)
+netcdf.close(ncid);
 
 % values at u-points (cell E/W boundaries)
+ncid = netcdf.open(f_GetROMSfilename('lat_u', readFile_FluxYear), 'NC_NOWRITE');
 varid       = netcdf.inqVarID(ncid, 'lat_u');
 lat_u       = netcdf.getVar(ncid, varid);       % 'latitude of U-points'; (2D matrix: u longitude (52 west:east) X u latitude (81 south:north))
+netcdf.close(ncid);
+
+ncid = netcdf.open(f_GetROMSfilename('lon_u', readFile_FluxYear), 'NC_NOWRITE');
 varid       = netcdf.inqVarID(ncid, 'lon_u');
 lon_u       = netcdf.getVar(ncid, varid);       % 'longitude of U-points'; (2D matrix: u longitude (52 west:east) X u latitude (81 south:north))
+netcdf.close(ncid);
+
+ncid = netcdf.open(f_GetROMSfilename('u', readFile_FluxYear), 'NC_NOWRITE');
 varid       = netcdf.inqVarID(ncid, 'u');
-varSize = ncinfo(readFile_FluxYear, 'u').Size;
+varSize = ncinfo(f_GetROMSfilename('u', readFile_FluxYear), 'u').Size;
 u           = netcdf.getVar(ncid, varid, [0, 0, 0, startDay-1], [varSize(1), varSize(2), varSize(3), numDay]);       % time-averaged u-momentum component; (m/s); (4D matrix: u longitude (52 west:east) X u latitude (81 south:north) X num_z (42; s_rho) X num_days)
+netcdf.close(ncid);
 
 % other variables
+ncid = netcdf.open(f_GetROMSfilename('hc', readFile_FluxYear), 'NC_NOWRITE');
 varid       = netcdf.inqVarID(ncid, 'hc');
 hc          = netcdf.getVar(ncid, varid);       % 'S-coordinate parameter, critical depth'; (m); scalar
+netcdf.close(ncid);
 
 % variables NOT loaded
 %         Cs_w      'S-coordinate stretching curves at W-points'; (-1 to 0); (vertical vector: 43 X 1)
@@ -219,7 +258,7 @@ hc          = netcdf.getVar(ncid, varid);       % 'S-coordinate parameter, criti
 ROMS_refTime_matlab     = datenum([1900, 1, 1, 0, 0, 0]);
 
 % Read the ocean_time basis
-vinfo = ncinfo(readFile_FluxYear, 'ocean_time').Attributes;
+vinfo = ncinfo(f_GetROMSfilename('ocean_time', readFile_FluxYear), 'ocean_time').Attributes;
 unitsIndex = find(cellfun(@(x)isequal(x, 'units'), {vinfo.Name}));
 units = vinfo(unitsIndex).Value;
 out = regexp(units, '\d{4}-\d{2}-\d{2}', 'match');
@@ -231,10 +270,7 @@ ocean_time_days = (thisRefTime - ROMS_refTime_matlab) + thisDdays;
 ocean_time = ocean_time_days*24*60*60;
 ocean_time = ocean_time';
 
-% Close the NetCDF file
-netcdf.close(ncid)
 % -------------------------------------------------------------------------
-
 
 % step 2b: clear temporary variables --------------------------------------
 clear ncid varid

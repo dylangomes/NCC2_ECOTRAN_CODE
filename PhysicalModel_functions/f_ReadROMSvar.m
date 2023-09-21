@@ -1,4 +1,4 @@
-function val = f_ReadROMSvar(var, fileType)
+function val = f_ReadROMSvar(var)
 %   f_ReadROMSvar Read ROMS data for the specified var from the appropriate file.
 
     ROMStype = f_GetROMStype();

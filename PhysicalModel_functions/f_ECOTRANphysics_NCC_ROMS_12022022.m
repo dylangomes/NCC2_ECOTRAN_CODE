@@ -240,9 +240,28 @@ for year_loop = 1:num_years
     if ~foundMatch
         disp('Generating ROMSflux');
         numDay = 10;
-        startDays = 1:numDay:365;
+
+        % Determine if current_year is a leap year
+        if mod(current_year, 4)==0
+            leapYear = true;
+            if mod(current_year, 100)==0
+                leapYear = false;
+                if mod(current_year, 400)==0
+                    leapYear = true;
+                end
+            end
+        else
+            leapYear = false;
+        end
+        if leapYear
+            endDays = 366;
+        else
+            endDays = 365;
+        end
+
+        startDays = 1:numDay:endDays;
         for startDay = startDays
-            thisNumDay = min(numDay, 365-startDay+1);
+            thisNumDay = min(numDay, endDays-startDay+1);
             thisROMSflux = f_ROMS_FluxPrep_NCC_11302022(ROMSgrid, readFile_FluxYear, startDay, thisNumDay); % NOTE: this code will provide compacted fluxes for the current ROMS year, but compaction step will be repeated AFTER all ROMS years are stacked
 
             if startDay==1

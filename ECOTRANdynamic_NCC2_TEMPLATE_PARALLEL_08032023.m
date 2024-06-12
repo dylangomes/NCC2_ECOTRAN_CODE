@@ -91,8 +91,6 @@ num_Treatment_2     = length(Treatment_2);
 % num_Treatment_3     = length(Treatment_3);
 num_Treatment_total	= num_Treatment_1 * num_Treatment_2; %* num_Treatment_3;
 
-% counter = 0;
-% z=[]; % initialize array to save metadata
 
 % parallelize (parfor) loop with longest length (Treatment_1 vs Treatment_2).
 if num_Treatment_1 >= num_Treatment_2
@@ -113,12 +111,13 @@ if num_Treatment_1 >= num_Treatment_2
         end % (Treatment_2_loop)
     end % (Treatment_1_loop)
 else % this else statement parallelizes the other loop, if the Treatment_2 vector is longer
+   parfor Treatment_2_loop = 1:num_Treatment_2
+            current_Treatment_2     = Treatment_2(Treatment_2_loop);
+
     for Treatment_1_loop = 1:num_Treatment_1
 
         current_Treatment_1     = Treatment_1(Treatment_1_loop);
     
-        parfor Treatment_2_loop = 1:num_Treatment_2
-            current_Treatment_2     = Treatment_2(Treatment_2_loop);
             run_Treatments          = [current_Treatment_1, current_Treatment_2]; % choose functional group (Treatment_1) to change by a factor of X (Treament 2); 
             rng('shuffle');
 

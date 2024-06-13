@@ -32,5 +32,7 @@ Ruzicka, J. J., Steele, J. H., Gaichas, S. K., Ballerini, T., Gifford, D. J., Br
 
 Ruzicka, J. J., Steele, J. S., Brink, K. H., Gifford, D. J., & Bahr, F. (2018). Understanding large-scale energy flows through end-to-end shelf ecosystems - the importance of physical context. Journal of Marine Systems, 187, 235-249. https://doi.org/10.1016/j.jmarsys.2018.08.003
 
-Gomes, D., Ruzicka, J. J., Crozier, L. G., Huff, D. D., Phillips, E. M., Hernvann, P. Y., ... & Auth, T. D. (2022). An updated end-to-end ecosystem model of the Northern California Current reflecting ecosystem changes due to recent marine heat waves. bioRxiv, 2022-12. https://doi.org/10.1101/2022.12.28.522165
+Gomes, D. G., Ruzicka, J. J., Crozier, L. G., Huff, D. D., Phillips, E. M., Hernvann, P. Y., ... & Auth, T. D. (2024). An updated end-to-end ecosystem model of the Northern California Current reflecting ecosystem changes due to recent marine heatwaves. Plos one, 19(1), e0280366.
+
+Gomes, D. G., Ruzicka, J. J., Crozier, L. G., Huff, D. D., Brodeur, R. D., & Stewart, J. D. (2024). Marine heatwaves disrupt ecosystem structure and function via altered food webs and energy flux. Nature Communications, 15(1), 1988.
 
